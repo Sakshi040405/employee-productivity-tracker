@@ -1,0 +1,3833 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>EMP Tracker - Admin</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+        /* =====================================================
+           TOP PERFORMER HIGHLIGHT
+        ===================================================== */
+
+        .top-performer {
+            position: relative;
+            border: 1px solid rgba(99, 102, 241, 0.15);
+        }
+
+        .top-performer.first-place {
+            border: 2px solid rgba(245, 158, 11, 0.55);
+            box-shadow: 0 8px 30px rgba(245, 158, 11, 0.12);
+        }
+
+        .top-performer.second-place {
+            border: 2px solid rgba(148, 163, 184, 0.55);
+        }
+
+        .top-performer.third-place {
+            border: 2px solid rgba(180, 83, 9, 0.35);
+        }
+
+        .rank-medal {
+            font-size: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 42px;
+        }
+
+        .rank-badge {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        /* =====================================================
+           PERFORMANCE CHART
+        ===================================================== */
+
+        .performance-chart-wrapper {
+            width: 100%;
+            height: 420px;
+            position: relative;
+        }
+
+        .performance-chart-wrapper canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* =====================================================
+           EMPLOYEE BLOCKS
+        ===================================================== */
+
+        .employee-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .employee-card {
+            position: relative;
+        }
+
+        /* =====================================================
+           EMPTY DATA
+        ===================================================== */
+
+        .empty-record {
+            text-align: center;
+            padding: 35px;
+            color: #888;
+        }
+
+        /* =====================================================
+           ERROR TABLE
+        ===================================================== */
+
+        .error-total {
+            font-weight: 700;
+        }
+
+        .error-zero {
+            color: #16a34a;
+        }
+
+        .error-positive {
+            color: #dc2626;
+            font-weight: 700;
+        }
+
+        /* =====================================================
+           QUALITY BADGE
+        ===================================================== */
+
+        .quality-good {
+            color: #16a34a;
+            font-weight: 700;
+        }
+
+        .quality-warning {
+            color: #d97706;
+            font-weight: 700;
+        }
+
+        /* =====================================================
+           MOBILE
+        ===================================================== */
+
+        @media (max-width: 768px) {
+
+            .performance-chart-wrapper {
+                height: 320px;
+            }
+
+            .employee-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="dashboard">
+
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside class="sidebar"
+           id="adminSidebar">
+
+
+        <div class="logo">
+
+            <div class="logo-icon">
+
+                <i class="fa-solid fa-chart-pie"></i>
+
+            </div>
+
+
+            <div class="logo-text">
+    <div class="cpt-team">🚀 CPT-TEAM</div>
+    <h2>EMP Tracker</h2>
+    <span>HR Dashboard</span>
+</div>
+
+        </div>
+
+
+        <nav class="sidebar-nav">
+
+
+            <button
+                class="nav-item active"
+                onclick="adminShowSection('overview', this)">
+
+                <i class="fa-solid fa-house"></i>
+
+                <span>
+                    Overview
+                </span>
+
+            </button>
+
+
+            <button
+                class="nav-item"
+                onclick="adminShowSection('performance', this)">
+
+                <i class="fa-solid fa-chart-line"></i>
+
+                <span>
+                    Performance
+                </span>
+
+            </button>
+
+
+            <button
+                class="nav-item"
+                onclick="adminShowSection('leaderboard', this)">
+
+                <i class="fa-solid fa-trophy"></i>
+
+                <span>
+                    Leaderboard
+                </span>
+
+            </button>
+
+
+            <button
+                class="nav-item"
+                onclick="adminShowSection('production', this)">
+
+                <i class="fa-solid fa-box"></i>
+
+                <span>
+                    Production
+                </span>
+
+            </button>
+
+
+            <button
+                class="nav-item"
+                onclick="adminShowSection('quality', this)">
+
+                <i class="fa-solid fa-circle-check"></i>
+
+                <span>
+                    Quality
+                </span>
+
+            </button>
+
+
+            <button
+                class="nav-item"
+                onclick="adminShowSection('errors', this)">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                <span>
+                    Errors
+                </span>
+
+            </button>
+
+           <button
+    type="button"
+    class="nav-item"
+    onclick="openAIErrorAnalyzer(this)">
+
+    <i class="fa-solid fa-robot"></i>
+
+    <span>
+        AI Error Analysis
+    </span>
+
+</button>
+
+
+            <button
+                class="nav-item"
+                onclick="adminShowSection('employees', this)">
+
+                <i class="fa-solid fa-users"></i>
+
+                <span>
+                    Employees
+                </span>
+
+            </button>
+
+
+            <button
+                class="nav-item"
+                onclick="adminShowSection('reports', this)">
+
+                <i class="fa-solid fa-file-lines"></i>
+
+                <span>
+                    Reports
+                </span>
+
+            </button>
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+            <a href="{{ url_for('logout') }}"
+               class="logout-btn">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                <span>
+                    Logout
+                </span>
+
+            </a>
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+    ====================================================== -->
+
+    <main class="main-content">
+
+
+        <!-- =================================================
+             TOPBAR
+        ================================================== -->
+
+        <header class="topbar">
+
+
+            <div class="mobile-menu-btn"
+                 onclick="toggleAdminSidebar()">
+
+                <i class="fa-solid fa-bars"></i>
+
+            </div>
+
+
+            <div class="page-heading">
+
+                <h1 id="adminPageTitle">
+                    Overview
+                </h1>
+
+                <p id="adminPageSubtitle">
+                    Team performance overview
+                </p>
+
+            </div>
+
+
+            <div class="admin-profile">
+
+                <div class="admin-avatar">
+
+                    <i class="fa-solid fa-user-tie"></i>
+
+                </div>
+
+
+                <div>
+
+                    <strong>
+                        Admin / HR
+                    </strong>
+
+                    <small>
+                        Administrator
+                    </small>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- =================================================
+             OVERVIEW
+        ================================================== -->
+
+        <section id="overview"
+                 class="dashboard-section active">
+
+
+            <!-- WELCOME -->
+
+            <div class="welcome-card">
+
+                <div>
+
+                    <span class="welcome-small">
+                        Welcome back 👋
+                    </span>
+
+                    <h2>
+
+                        Good
+                        <span id="timeGreeting">
+                            Evening
+                        </span>,
+
+                        Admin
+
+                    </h2>
+
+                    <p>
+                        Here's your team's performance overview.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- KPI CARDS -->
+
+            <div class="stats-grid">
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon purple">
+
+                        <i class="fa-solid fa-box"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Total Production
+                        </span>
+
+                        <h3>
+                            {{ total_production | default(0) }}
+                        </h3>
+
+                        <small>
+                            Current period
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon blue">
+
+                        <i class="fa-solid fa-users"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Total Employees
+                        </span>
+
+                        <h3>
+                            {{ total_employees | default(0) }}
+                        </h3>
+
+                        <small>
+                            Active employees
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon green">
+
+                        <i class="fa-solid fa-chart-line"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Avg Productivity
+                        </span>
+
+                        <h3>
+                            {{ average_productivity | default(0) }}%
+                        </h3>
+
+                        <small>
+                            Team average
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon orange">
+
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Total Errors
+                        </span>
+
+                        <h3>
+                            {{ total_errors | default(0) }}
+                        </h3>
+
+                        <small>
+                            Error monitoring
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- PRODUCTION + QUICK SUMMARY -->
+
+            <div class="content-grid">
+
+
+                <!-- DAILY PRODUCTION -->
+
+                <div class="content-card large-card">
+
+                    <div class="card-header">
+
+                        <div>
+
+                            <h2>
+                                Production Overview
+                            </h2>
+
+                            <p>
+                                Daily production trend
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="chart-box">
+
+                        <canvas
+                            id="adminProductionChart">
+                        </canvas>
+
+                    </div>
+
+                </div>
+
+
+
+
+
+
+            <!-- =================================================
+                 TOP PERFORMERS
+            ================================================== -->
+
+            <div class="content-card">
+
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Top Performers
+                        </h2>
+
+                        <p>
+                            Highest productivity employees
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="top-three-grid">
+
+
+                    {% for employee in leaderboard[:5] %}
+
+
+                    <div class="
+                        performer-card
+                        {% if loop.index == 1 %}
+                            top-performer first-place
+                        {% elif loop.index == 2 %}
+                            top-performer second-place
+                        {% elif loop.index == 3 %}
+                            top-performer third-place
+                        {% endif %}
+                    ">
+
+
+                        <div class="performer-header">
+
+
+                            <span class="rank-medal">
+
+                                {% if loop.index == 1 %}
+
+                                    🥇
+
+                                {% elif loop.index == 2 %}
+
+                                    🥈
+
+                                {% elif loop.index == 3 %}
+
+                                    🥉
+
+                                {% else %}
+
+                                    #{{ loop.index }}
+
+                                {% endif %}
+
+                            </span>
+
+
+                            <div>
+
+                                <h3>
+                                    {{ employee["User Name"] }}
+                                </h3>
+
+                                <span>
+                                    {{ "ipruXXXXX" if employee["User ID's"] else "" }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <div class="performer-metrics">
+
+
+                            <div>
+
+                                <small>
+                                    Productivity
+                                </small>
+
+                                <strong>
+                                    {{ employee["Productivity %"] | default(0) }}%
+                                </strong>
+
+                            </div>
+
+
+                            <div>
+
+                                <small>
+                                    Quality
+                                </small>
+
+                                <strong>
+                                    {{ employee["Quality %"] | default(0) }}%
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <div class="performer-footer">
+
+                            <span>
+                                Production:
+                                {{ employee["Total Production"] | default(0) }}
+                            </span>
+
+                            <span>
+                                Errors:
+                                {{ employee["Total Errors"] | default(0) }}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    {% else %}
+
+
+                    <div class="empty-record">
+
+                        No employee records found.
+
+                    </div>
+
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             PERFORMANCE
+        ================================================== -->
+
+        <section id="performance"
+                 class="dashboard-section">
+
+
+            <div class="section-heading">
+
+                <h2>
+                    Performance
+                </h2>
+
+                <p>
+                    Employee productivity analysis
+                </p>
+
+            </div>
+
+
+
+            <!-- PERFORMANCE GRAPH -->
+
+            <div class="content-card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Employee Performance
+                        </h2>
+
+                        <p>
+                            Productivity and quality percentage by employee
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="performance-chart-wrapper">
+
+                    <canvas
+                        id="productivityChart">
+                    </canvas>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- PERFORMANCE TABLE -->
+
+            <div class="content-card">
+
+
+                <div class="table-header">
+
+                    <div>
+
+                        <h2>
+                            Performance Details
+                        </h2>
+
+                        <p>
+                            Complete employee performance
+                        </p>
+
+                    </div>
+
+
+                    <input
+                        type="text"
+                        id="performanceSearch"
+                        placeholder="Search employee..."
+                        class="table-search"
+                    >
+
+                </div>
+
+
+
+                <div class="table-wrapper">
+
+                    <table
+                        class="data-table"
+                        id="adminPerformanceTable"
+                    >
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Employee
+                                </th>
+
+                                <th>
+                                    Employee ID
+                                </th>
+
+                                <th>
+                                    Target
+                                </th>
+
+                                <th>
+                                    Production
+                                </th>
+
+                                <th>
+                                    Productivity
+                                </th>
+
+                                <th>
+                                    Quality
+                                </th>
+
+                                <th>
+                                    Errors
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+
+                        <tbody>
+
+
+                            {% for row in performance %}
+
+
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        {{ row["User Name"] }}
+                                    </strong>
+                                </td>
+
+
+                                <td>
+                                    {{ "ipruXXXXX" if row["User ID's"] else "" }}
+                                </td>
+
+
+                                <td>
+                                    {{ row["Target"] | default(0) }}
+                                </td>
+
+
+                                <td>
+                                    {{ row["Total Production"] | default(0) }}
+                                </td>
+
+
+                                <td>
+                                    {{ row["Productivity %"] | default(0) }}%
+                                </td>
+
+
+                                <td>
+                                    {{ row["Quality %"] | default(0) }}%
+                                </td>
+
+
+                                <td>
+                                    {{ row["Total Errors"] | default(0) }}
+                                </td>
+
+                            </tr>
+
+
+                            {% else %}
+
+
+                            <tr>
+
+                                <td
+                                    colspan="7"
+                                    class="empty-record">
+
+                                    No performance records found.
+
+                                </td>
+
+                            </tr>
+
+
+                            {% endfor %}
+
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             LEADERBOARD
+        ================================================== -->
+
+        <section id="leaderboard"
+                 class="dashboard-section">
+
+
+            <div class="section-heading">
+
+                <h2>
+                    Leaderboard
+                </h2>
+
+                <p>
+                    Team performance ranking
+                </p>
+
+            </div>
+
+
+
+            <div class="content-card">
+
+
+                <div class="table-header">
+
+                    <div>
+
+                        <h2>
+                            Employee Ranking
+                        </h2>
+
+                        <p>
+                            Ranked by productivity
+                        </p>
+
+                    </div>
+
+
+                    <input
+                        type="text"
+                        id="leaderboardSearch"
+                        placeholder="Search employee..."
+                        class="table-search"
+                    >
+
+                </div>
+
+
+
+                <div class="table-wrapper">
+
+                    <table
+                        class="leaderboard-table"
+                        id="adminLeaderboardTable"
+                    >
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Rank
+                                </th>
+
+                                <th>
+                                    Employee
+                                </th>
+
+                                <th>
+                                    Employee ID
+                                </th>
+
+                                <th>
+                                    Productivity
+                                </th>
+
+                                <th>
+                                    Quality
+                                </th>
+
+                                <th>
+                                    Production
+                                </th>
+
+                                <th>
+                                    Errors
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+
+                        <tbody>
+
+
+                            {% for row in leaderboard %}
+
+
+                            <tr>
+
+                                <td>
+
+                                    <span class="rank-badge">
+
+                                        {% if row["Rank"] == 1 %}
+
+                                            🥇
+
+                                        {% elif row["Rank"] == 2 %}
+
+                                            🥈
+
+                                        {% elif row["Rank"] == 3 %}
+
+                                            🥉
+
+                                        {% else %}
+
+                                            #{{ row["Rank"] }}
+
+                                        {% endif %}
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <strong>
+                                        {{ row["User Name"] }}
+                                    </strong>
+
+                                </td>
+
+
+                                <td>
+                                    {{ "ipruXXXXX" if row["User ID's"] else "" }}
+                                </td>
+
+
+                                <td>
+                                    {{ row["Productivity %"] | default(0) }}%
+                                </td>
+
+
+                                <td>
+                                    {{ row["Quality %"] | default(0) }}%
+                                </td>
+
+
+                                <td>
+                                    {{ row["Total Production"] | default(0) }}
+                                </td>
+
+
+                                <td>
+                                    {{ row["Total Errors"] | default(0) }}
+                                </td>
+
+                            </tr>
+
+
+                            {% else %}
+
+
+                            <tr>
+
+                                <td
+                                    colspan="7"
+                                    class="empty-record">
+
+                                    No leaderboard records found.
+
+                                </td>
+
+                            </tr>
+
+
+                            {% endfor %}
+
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             PRODUCTION
+        ================================================== -->
+
+        <section id="production"
+                 class="dashboard-section">
+
+
+            <div class="section-heading">
+
+                <h2>
+                    Production
+                </h2>
+
+                <p>
+                    Employee production records
+                </p>
+
+            </div>
+
+
+
+            <div class="content-card">
+
+
+                <div class="table-header">
+
+                    <div>
+
+                        <h2>
+                            Production Records
+                        </h2>
+
+                        <p>
+                            Employee-wise production
+                        </p>
+
+                    </div>
+
+
+                    <input
+                        type="text"
+                        id="productionSearch"
+                        placeholder="Search employee..."
+                        class="table-search"
+                    >
+
+                </div>
+
+
+
+                <div class="table-wrapper">
+
+                    <table
+                        class="data-table"
+                        id="adminProductionTable"
+                    >
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Employee
+                                </th>
+
+                                <th>
+                                    Employee ID
+                                </th>
+
+                                <th>
+                                    Target
+                                </th>
+
+                                <th>
+                                    Total Production
+                                </th>
+
+                                <th>
+                                    Productivity
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+
+                        <tbody>
+
+
+                            {% for row in production %}
+
+
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        {{ row["User Name"] }}
+                                    </strong>
+                                </td>
+
+
+                                <td>
+                                    {{ "ipruXXXXX" if row["User ID's"] else "" }}
+                                </td>
+
+
+                                <td>
+                                    {{ row["Target"] | default(0) }}
+                                </td>
+
+
+                                <td>
+                                    {{ row["Total Production"] | default(0) }}
+                                </td>
+
+
+                                <td>
+                                    {{ row["Productivity %"] | default(0) }}%
+                                </td>
+
+                            </tr>
+
+
+                            {% else %}
+
+
+                            <tr>
+
+                                <td
+                                    colspan="5"
+                                    class="empty-record">
+
+                                    No production records found.
+
+                                </td>
+
+                            </tr>
+
+
+                            {% endfor %}
+
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             QUALITY
+        ================================================== -->
+
+        <section id="quality"
+                 class="dashboard-section">
+
+
+            <div class="section-heading">
+
+                <h2>
+                    Quality
+                </h2>
+
+                <p>
+                    Quality and error monitoring
+                </p>
+
+            </div>
+
+
+
+            <div class="content-card">
+
+
+                <div class="table-header">
+
+                    <div>
+
+                        <h2>
+                            Employee Quality
+                        </h2>
+
+                        <p>
+                            Employees with errors are shown first
+                        </p>
+
+                    </div>
+
+
+                    <input
+                        type="text"
+                        id="qualitySearch"
+                        placeholder="Search employee..."
+                        class="table-search"
+                    >
+
+                </div>
+
+
+
+                <div class="table-wrapper">
+
+                    <table
+                        class="data-table"
+                        id="adminQualityTable"
+                    >
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Employee
+                                </th>
+
+                                <th>
+                                    Production
+                                </th>
+
+                                <th>
+                                    Total Errors
+                                </th>
+
+                                <th>
+                                    Error %
+                                </th>
+
+                                <th>
+                                    Quality %
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+
+                        <tbody>
+
+
+                            {% for row in quality %}
+
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>
+                                        {{ row["User Name"] }}
+                                    </strong>
+
+                                </td>
+
+
+                                <td>
+                                    {{ row["Total Production"] | default(0) }}
+                                </td>
+
+
+                                <td>
+
+                                    {% if row["Total Errors"]|default(0)|float > 0 %}
+
+                                        <span class="error-positive">
+                                            {{ row["Total Errors"] }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="error-zero">
+                                            0
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+                                    {{ row["Error %"] | default(0) }}%
+                                </td>
+
+
+                                <td>
+
+                                    {% if row["Quality %"]|default(0)|float >= 99 %}
+
+                                        <span class="quality-good">
+                                            {{ row["Quality %"] | default(0) }}%
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="quality-warning">
+                                            {{ row["Quality %"] | default(0) }}%
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+
+                            {% else %}
+
+
+                            <tr>
+
+                                <td
+                                    colspan="5"
+                                    class="empty-record">
+
+                                    No quality records found.
+
+                                </td>
+
+                            </tr>
+
+
+                            {% endfor %}
+
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             ERRORS
+        ================================================== -->
+
+        <section id="errors"
+                 class="dashboard-section">
+
+
+            <div class="section-heading">
+
+                <h2>
+                    Errors
+                </h2>
+
+                <p>
+                    Employee-wise error categories
+                </p>
+
+            </div>
+
+
+
+            <div class="content-card">
+
+
+                <div class="table-header">
+
+                    <div>
+
+                        <h2>
+                            Internal Error
+                        </h2>
+
+                        <p>
+                            No Error and Grand Total are displayed separately
+                        </p>
+
+                    </div>
+
+
+                    <input
+                        type="text"
+                        id="errorSearch"
+                        placeholder="Search employee..."
+                        class="table-search"
+                    >
+
+                </div>
+
+
+
+                <div class="table-wrapper">
+
+                    <table
+                        class="data-table"
+                        id="adminErrorsTable"
+                    >
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Employee
+                                </th>
+
+                                <th>
+                                    COPS / Kyc
+                                </th>
+
+                                <th>
+                                    Finance
+                                </th>
+
+                                <th>
+                                    Medical
+                                </th>
+
+                                <th>
+                                    OMD
+                                </th>
+
+                                <th>
+                                    Zero Tolarance
+                                </th>
+
+                                <th>
+                                    Total Errors
+                                </th>
+
+                                <th>
+                                    No Error
+                                </th>
+
+                                <th>
+                                    Grand Total
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+
+                        <tbody>
+
+
+                            {% for row in errors %}
+
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>
+                                        {{ row["User Name"] }}
+                                    </strong>
+
+                                </td>
+
+
+                                <td>
+                                    {{ row["COPS / Kyc"] | default(0) }}
+                                </td>
+
+
+                                <td>
+                                    {{ row["Finance"] | default(0) }}
+                                </td>
+
+
+                                <td>
+                                    {{ row["Medical"] | default(0) }}
+                                </td>
+
+
+                                <td>
+                                    {{ row["OMD"] | default(0) }}
+                                </td>
+
+
+                                <td>
+                                    {{ row["Zero Tolarance"] | default(0) }}
+                                </td>
+
+
+                                <td>
+
+                                    <strong class="error-total">
+
+                                        {{ row["Total Errors"] | default(0) }}
+
+                                    </strong>
+
+                                </td>
+
+
+                                <td>
+                                    {{ row["No Error"] | default(0) }}
+                                </td>
+
+
+                                <td>
+                                    {{ row["Grand Total"] | default(0) }}
+                                </td>
+
+                            </tr>
+
+
+                            {% else %}
+
+
+                            <tr>
+
+                                <td
+                                    colspan="9"
+                                    class="empty-record">
+
+                                    No error records found.
+
+                                </td>
+
+                            </tr>
+
+
+                            {% endfor %}
+
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+        <!-- =================================================
+             CLIENT ERRORS
+        ================================================== -->
+
+        <div class="section-heading">
+
+            <h2>
+                Client Errors
+            </h2>
+
+            <p>
+                Vendor / client error details
+            </p>
+
+        </div>
+
+
+        <div class="content-card">
+
+            <div class="table-header">
+
+                <div>
+
+                    <h2>
+                        Client Error Details
+                    </h2>
+
+                    <p>
+                        Errors from CLIENT ERROR.xlsx
+                    </p>
+
+                </div>
+
+
+                <input
+                    type="text"
+                    id="clientErrorSearch"
+                    placeholder="Search employee..."
+                    class="table-search"
+                >
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table
+                    class="data-table"
+                    id="clientErrorsTable"
+                >
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Date
+                            </th>
+
+                            <th>
+                                User Name
+                            </th>
+
+                            <th>
+                                ID
+                            </th>
+
+                            <th>
+                                Error Type
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for row in vendor_errors %}
+
+                        <tr>
+
+                            <td>
+                                {{ row["DATE"] | default("") | string | replace(" 00:00:00", "") }}
+                            </td>
+
+                            <td>
+                                <strong>
+                                    {{ row["USER NAME"] | default("") }}
+                                </strong>
+                            </td>
+
+                            <td>
+                                {{ "ipruXXXXX" if row["ID"] else "" }}
+                            </td>
+
+                            <td>
+                                <span class="error-positive">
+                                    {{ row["Document Missing"] | default("") }}
+                                </span>
+                            </td>
+
+                        </tr>
+
+                        {% else %}
+
+                        <tr>
+
+                            <td
+                                colspan="4"
+                                class="empty-record"
+                            >
+                                No client error records found.
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        </section>
+        
+
+        <section id="ai-error-analysis" class="dashboard-section">
+
+    <div class="section-heading">
+        <h2>🤖 AI Error Analysis</h2>
+        <p>AI-powered Internal and Client Error Analysis</p>
+    </div>
+
+    <div class="content-card">
+
+        <div class="table-header">
+
+            <div>
+                <h2>AI Error Analyzer</h2>
+                <p>Analyze internal and client errors using AI</p>
+            </div>
+
+            <button
+                type="button"
+                class="btn-primary"
+                id="aiAnalyzeErrorsBtn"
+                onclick="runAIErrorAnalysis()">
+                🤖 Analyze Errors
+            </button>
+
+        </div>
+
+        <div id="aiErrorAnalysisResult">
+            <div id="aiErrorSummary"></div>
+            <div id="aiErrorResults">
+                <p>Click "Analyze Errors" to start AI analysis.</p>
+            </div>
+        </div>
+            <div id="aiErrorChatbot" style="
+                margin-top:24px;
+                border:1px solid rgba(99,102,241,.18);
+                border-radius:14px;
+                padding:18px;
+                background:#ffffff;
+            ">
+                <div style="margin-bottom:14px;">
+                    <h3 style="margin:0 0 5px 0;">💬 AI Project Assistant</h3>
+                    <p style="margin:0;color:#64748b;">
+                        Ask questions about the current AI Error Analysis.
+                    </p>
+                </div>
+
+                <div id="aiChatMessages" style="
+                    min-height:80px;
+                    max-height:320px;
+                    overflow-y:auto;
+                    margin-bottom:12px;
+                    padding:10px;
+                    border-radius:10px;
+                    background:#f8fafc;
+                ">
+                    <div style="margin-bottom:8px;">
+                        <strong>AI:</strong>
+                        Ask about overall summary, severity, employees,
+                        repeated errors, internal/client errors, patterns,
+                        reasons/actions, or management focus.
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:10px;">
+                    <input
+                        type="text"
+                        id="aiChatInput"
+                        placeholder="Ask a project-related question..."
+                        style="
+                            flex:1;
+                            padding:11px 13px;
+                            border:1px solid #cbd5e1;
+                            border-radius:9px;
+                            outline:none;
+                        "
+                    >
+                    <button
+                        type="button"
+                        class="btn-primary"
+                        onclick="sendAIProjectChat()">
+                        Send
+                    </button>
+                </div>
+
+                <div style="
+                    margin-top:10px;
+                    font-size:12px;
+                    color:#64748b;
+                ">
+                    Examples: “Total errors?”, “Show repeated errors”,
+                    “Which employee has most errors?”,
+                    “Internal vs client errors?”
+                </div>
+            </div>
+
+
+    </div>
+
+</section>
+
+
+        <!-- =================================================
+             EMPLOYEES
+        ================================================== -->
+
+        <section id="employees"
+                 class="dashboard-section">
+
+
+            <div class="section-heading">
+
+                <h2>
+                    Employees
+                </h2>
+
+                <p>
+                    Complete employee list
+                </p>
+
+            </div>
+
+
+
+            <div class="employee-grid">
+
+
+                {% for row in employees %}
+
+
+                <div class="employee-card">
+
+
+                    <div class="employee-avatar">
+
+                        {% set employee_name =
+                            row["User Name"] | default("Employee")
+                        %}
+
+                        {{ employee_name[0] | upper }}
+
+                    </div>
+
+
+                    <div class="employee-info">
+
+                        <h3>
+                            {{ row["User Name"] }}
+                        </h3>
+
+                        <span>
+                            {{ "ipruXXXXX" if row["User ID's"] else "" }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="employee-metrics">
+
+
+                        <div>
+
+                            <small>
+                                Target
+                            </small>
+
+                            <strong>
+                                {{ row["Target"] | default(0) }}
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <small>
+                                Production
+                            </small>
+
+                            <strong>
+                                {{ row["Total Production"] | default(0) }}
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <small>
+                                Productivity
+                            </small>
+
+                            <strong>
+                                {{ row["Productivity %"] | default(0) }}%
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <small>
+                                Quality
+                            </small>
+
+                            <strong>
+                                {{ row["Quality %"] | default(0) }}%
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="performer-footer">
+
+                        <span>
+                            Errors:
+                            {{ row["Total Errors"] | default(0) }}
+                        </span>
+
+
+
+                    </div>
+
+                </div>
+
+
+                {% else %}
+
+
+                <div class="empty-record">
+
+                    No employee records found.
+
+                </div>
+
+
+                {% endfor %}
+
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             REPORTS
+        ================================================== -->
+
+        <section id="reports"
+                 class="dashboard-section">
+
+
+            <div class="section-heading">
+
+                <h2>
+                    Reports
+                </h2>
+
+                <p>
+                    Employee performance reports
+                </p>
+
+            </div>
+
+
+
+            <div class="reports-grid">
+
+
+                <div class="content-card report-card">
+
+                    <div class="report-icon">
+
+                        <i class="fa-solid fa-chart-column"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Performance Report
+                    </h3>
+
+
+                    <p>
+                        View employee productivity and quality data.
+                    </p>
+
+
+                    <button
+                        type="button"
+                        onclick="adminShowSection('performance')">
+
+                        View Report
+
+                    </button>
+
+                </div>
+
+
+
+                <div class="content-card report-card">
+
+                    <div class="report-icon">
+
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Error Report
+                    </h3>
+
+
+                    <p>
+                        Monitor employee-wise error categories.
+                    </p>
+
+
+                    <button
+                        type="button"
+                        onclick="adminShowSection('errors')">
+
+                        View Report
+
+                    </button>
+
+                </div>
+
+
+
+                <div class="content-card report-card">
+
+                    <div class="report-icon">
+
+                        <i class="fa-solid fa-box"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Production Report
+                    </h3>
+
+
+                    <p>
+                        Review employee production records.
+                    </p>
+
+
+                    <button
+                        type="button"
+                        onclick="adminShowSection('production')">
+
+                        View Report
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+</div>
+
+
+
+<!-- =========================================================
+     DATA FOR JAVASCRIPT
+========================================================= -->
+
+<script>
+
+window.ADMIN_DAILY_PRODUCTION =
+    {{ daily_production | tojson | safe }};
+
+
+window.ADMIN_LEADERBOARD =
+    {{ leaderboard | tojson | safe }};
+
+
+window.ADMIN_PERFORMANCE =
+    {{ performance | tojson | safe }};
+
+
+window.ADMIN_QUALITY =
+    {{ quality | tojson | safe }};
+
+
+window.ADMIN_ERRORS =
+    {{ errors | tojson | safe }};
+
+</script>
+
+
+
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+
+
+<script>
+
+/* =========================================================
+   GREETING
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const greeting =
+            document.getElementById(
+                "timeGreeting"
+            );
+
+        if (!greeting) {
+            return;
+        }
+
+        const hour =
+            new Date().getHours();
+
+        if (hour < 12) {
+
+            greeting.textContent =
+                "Morning";
+
+        }
+
+        else if (hour < 17) {
+
+            greeting.textContent =
+                "Afternoon";
+
+        }
+
+        else {
+
+            greeting.textContent =
+                "Evening";
+
+        }
+
+    }
+);
+
+
+
+/* =========================================================
+   ERROR SEARCH
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const input =
+            document.getElementById(
+                "errorSearch"
+            );
+
+        const table =
+            document.getElementById(
+                "adminErrorsTable"
+            );
+
+        if (!input || !table) {
+            return;
+        }
+
+        input.addEventListener(
+            "input",
+            function () {
+
+                const value =
+                    this.value
+                    .toLowerCase()
+                    .trim();
+
+                const rows =
+                    table.querySelectorAll(
+                        "tbody tr"
+                    );
+
+                rows.forEach(
+                    function (row) {
+
+                        const text =
+                            row.textContent
+                            .toLowerCase();
+
+                        row.style.display =
+                            (
+                                !value ||
+                                text.includes(value)
+                            )
+                            ? ""
+                            : "none";
+
+                    }
+                );
+
+            }
+        );
+
+    }
+);
+
+
+
+/* =========================================================
+   CLIENT ERROR SEARCH
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const input =
+            document.getElementById(
+                "clientErrorSearch"
+            );
+
+        const table =
+            document.getElementById(
+                "clientErrorsTable"
+            );
+
+        if (!input || !table) {
+            return;
+        }
+
+        input.addEventListener(
+            "input",
+            function () {
+
+                const value =
+                    this.value
+                    .toLowerCase()
+                    .trim();
+
+                const rows =
+                    table.querySelectorAll(
+                        "tbody tr"
+                    );
+
+                rows.forEach(
+                    function (row) {
+
+                        const text =
+                            row.textContent
+                            .toLowerCase();
+
+                        row.style.display =
+                            (
+                                !value ||
+                                text.includes(value)
+                            )
+                            ? ""
+                            : "none";
+
+                    }
+                );
+
+            }
+        );
+
+    }
+);
+
+
+
+/* =========================================================
+   QUALITY SEARCH
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const input =
+            document.getElementById(
+                "qualitySearch"
+            );
+
+        const table =
+            document.getElementById(
+                "adminQualityTable"
+            );
+
+        if (!input || !table) {
+            return;
+        }
+
+        input.addEventListener(
+            "input",
+            function () {
+
+                const value =
+                    this.value
+                    .toLowerCase()
+                    .trim();
+
+                const rows =
+                    table.querySelectorAll(
+                        "tbody tr"
+                    );
+
+                rows.forEach(
+                    function (row) {
+
+                        const text =
+                            row.textContent
+                            .toLowerCase();
+
+                        row.style.display =
+                            (
+                                !value ||
+                                text.includes(value)
+                            )
+                            ? ""
+                            : "none";
+
+                    }
+                );
+
+            }
+        );
+
+    }
+);
+
+
+
+/* =========================================================
+   PRODUCTION SEARCH
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const input =
+            document.getElementById(
+                "productionSearch"
+            );
+
+        const table =
+            document.getElementById(
+                "adminProductionTable"
+            );
+
+        if (!input || !table) {
+            return;
+        }
+
+        input.addEventListener(
+            "input",
+            function () {
+
+                const value =
+                    this.value
+                    .toLowerCase()
+                    .trim();
+
+                const rows =
+                    table.querySelectorAll(
+                        "tbody tr"
+                    );
+
+                rows.forEach(
+                    function (row) {
+
+                        const text =
+                            row.textContent
+                            .toLowerCase();
+
+                        row.style.display =
+                            (
+                                !value ||
+                                text.includes(value)
+                            )
+                            ? ""
+                            : "none";
+
+                    }
+                );
+
+            }
+        );
+
+    }
+);
+
+
+
+/* =========================================================
+   PERFORMANCE SEARCH
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const input =
+            document.getElementById(
+                "performanceSearch"
+            );
+
+        const table =
+            document.getElementById(
+                "adminPerformanceTable"
+            );
+
+        if (!input || !table) {
+            return;
+        }
+
+        input.addEventListener(
+            "input",
+            function () {
+
+                const value =
+                    this.value
+                    .toLowerCase()
+                    .trim();
+
+                const rows =
+                    table.querySelectorAll(
+                        "tbody tr"
+                    );
+
+                rows.forEach(
+                    function (row) {
+
+                        const text =
+                            row.textContent
+                            .toLowerCase();
+
+                        row.style.display =
+                            (
+                                !value ||
+                                text.includes(value)
+                            )
+                            ? ""
+                            : "none";
+
+                    }
+                );
+
+            }
+        );
+
+    }
+);
+
+
+
+/* =========================================================
+   LEADERBOARD SEARCH
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const input =
+            document.getElementById(
+                "leaderboardSearch"
+            );
+
+        const table =
+            document.getElementById(
+                "adminLeaderboardTable"
+            );
+
+        if (!input || !table) {
+            return;
+        }
+
+        input.addEventListener(
+            "input",
+            function () {
+
+                const value =
+                    this.value
+                    .toLowerCase()
+                    .trim();
+
+                const rows =
+                    table.querySelectorAll(
+                        "tbody tr"
+                    );
+
+                rows.forEach(
+                    function (row) {
+
+                        const text =
+                            row.textContent
+                            .toLowerCase();
+
+                        row.style.display =
+                            (
+                                !value ||
+                                text.includes(value)
+                            )
+                            ? ""
+                            : "none";
+
+                    }
+                );
+
+            }
+        );
+
+    }
+);
+
+
+
+/* =========================================================
+   MOBILE SIDEBAR
+========================================================= */
+
+function toggleAdminSidebar() {
+
+    const sidebar =
+        document.getElementById(
+            "adminSidebar"
+        );
+
+    if (!sidebar) {
+        return;
+    }
+
+    sidebar.classList.toggle(
+        "open"
+    );
+
+}
+
+</script>
+<script>
+
+async function runAIErrorAnalysis() {
+
+    const button =
+        document.getElementById(
+            "aiAnalyzeErrorsBtn"
+        );
+
+    const resultBox =
+        document.getElementById(
+            "aiErrorAnalysisResult"
+        );
+
+    if (!button || !resultBox) {
+        return;
+    }
+
+    button.disabled = true;
+    button.innerHTML =
+        "🤖 Analyzing...";
+
+    try {
+
+        const response =
+            await fetch(
+                "/admin/ai-error-analysis",
+                {
+                    method: "POST"
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok || !data.ok) {
+
+            throw new Error(
+                data.message ||
+                "AI analysis failed"
+            );
+
+        }
+
+        const summary =
+            data.summary || {};
+
+        const records =
+            data.records || [];
+
+        let html = `
+
+            <div style="
+                margin-bottom:20px;
+            ">
+
+                <div style="
+                    display:grid;
+                    grid-template-columns:
+                    repeat(6, 1fr);
+                    gap:15px;
+                ">
+
+                    <div>
+                        <strong>
+                            Total Errors
+                        </strong>
+                        <div>
+                            ${summary.total_errors || 0}
+                        </div>
+                    </div>
+
+                    <div>
+                        <strong>
+                            🔴 High
+                        </strong>
+                        <div>
+                            ${summary.high || 0}
+                        </div>
+                    </div>
+
+                    <div>
+                        <strong>
+                            🟠 Medium
+                        </strong>
+                        <div>
+                            ${summary.medium || 0}
+                        </div>
+                    </div>
+
+                    <div>
+                        <strong>
+                            🟢 Low
+                        </strong>
+                        <div>
+                            ${summary.low || 0}
+                        </div>
+                    </div>
+
+                    <div>
+                        <strong>
+                            Internal
+                        </strong>
+                        <div>
+                            ${summary.internal_errors || 0}
+                        </div>
+                    </div>
+
+                    <div>
+                        <strong>
+                            Client
+                        </strong>
+                        <div>
+                            ${summary.client_errors || 0}
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div style="
+                margin-top:20px;
+                margin-bottom:20px;
+            ">
+
+                <h3 style="
+                    margin-bottom:12px;
+                ">
+                    🔁 Repetitive Error Summary
+                </h3>
+
+                ${
+                    (summary.repetitive_errors || []).length
+                    ? `
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Error</th>
+                                        <th>Pattern</th>
+                                        <th>Severity</th>
+                                        <th>Repeat Count</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    ${
+                                        (summary.repetitive_errors || []).map(
+                                            function(item) {
+                                                return `
+                                                    <tr>
+                                                        <td>${item.employee || ""}</td>
+                                                        <td>${item.error || ""}</td>
+                                                        <td>${item.pattern || ""}</td>
+                                                        <td>${item.severity || ""}</td>
+                                                        <td><strong>${item.count || 0}</strong></td>
+                                                    </tr>
+                                                `;
+                                            }
+                                        ).join("")
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    `
+                    : `
+                        <p>
+                            No repetitive errors found.
+                        </p>
+                    `
+                }
+
+            </div>
+
+            <div class="table-wrapper">
+
+                <table class="data-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Employee</th>
+                            <th>Source</th>
+                            <th>Error</th>
+                            <th>Category</th>
+                            <th>Severity</th>
+                            <th>Pattern</th>
+                            <th>Reason</th>
+                            <th>Recommended Action</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+        `;
+
+        records.forEach(
+            function(record) {
+
+                html += `
+
+                    <tr>
+
+                        <td>
+                            ${record.employee || ""}
+                        </td>
+
+                        <td>
+                            ${record.source || ""}
+                        </td>
+
+                        <td>
+                            ${record.error || record.description || ""}
+                        </td>
+
+                        <td>
+                            ${record.category || ""}
+                        </td>
+
+                        <td>
+                            ${record.severity_label || ""}
+                        </td>
+
+                        <td>
+                            ${record.pattern || ""}
+                        </td>
+
+                        <td>
+                            ${record.reason || ""}
+                        </td>
+
+                        <td>
+                            ${record.recommended_action || ""}
+                        </td>
+
+                    </tr>
+
+                `;
+
+            }
+        );
+
+        html += `
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        `;
+
+        resultBox.innerHTML = html;
+
+    }
+    catch (error) {
+
+        resultBox.innerHTML = `
+            <p style="color:#dc2626;">
+                ${error.message || "AI Error Analysis failed."}
+            </p>
+        `;
+
+        console.error(error);
+
+    }
+    finally {
+
+        button.disabled = false;
+
+        button.innerHTML =
+            "🤖 Analyze Errors";
+
+    }
+
+}
+
+</script>
+
+
+<script>
+/* =========================================================
+   AI PROJECT CHATBOT - 8 PROJECT TOPICS
+   Uses only the current AI analysis data.
+========================================================= */
+
+let AI_CHAT_RECORDS = [];
+let AI_CHAT_SUMMARY = {};
+
+function aiChatAddMessage(sender, message) {
+
+    const box = document.getElementById("aiChatMessages");
+
+    if (!box) {
+        return;
+    }
+
+    const div = document.createElement("div");
+
+    div.style.marginBottom = "10px";
+
+    div.innerHTML =
+        "<strong>" +
+        sender +
+        ":</strong> " +
+        String(message)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\n/g, "<br>");
+
+    box.appendChild(div);
+
+    box.scrollTop = box.scrollHeight;
+}
+
+function aiChatGetData() {
+
+    if (
+        typeof AI_CHAT_RECORDS !== "undefined" &&
+        AI_CHAT_RECORDS.length
+    ) {
+        return true;
+    }
+
+    aiChatAddMessage(
+        "AI",
+        "Please click “Analyze Errors” first. I need the current AI Error Analysis data to answer project questions."
+    );
+
+    return false;
+}
+
+function aiChatEmployeeName(record) {
+
+    return String(
+        record.employee ||
+        record["Employee"] ||
+        ""
+    ).trim();
+}
+
+function aiChatErrorName(record) {
+
+    return String(
+        record.error ||
+        record.description ||
+        record["Error"] ||
+        ""
+    ).trim();
+}
+
+function aiChatSeverity(record) {
+
+    return String(
+        record.severity_label ||
+        record.severity ||
+        ""
+    ).trim();
+}
+
+function aiChatSource(record) {
+
+    return String(
+        record.source ||
+        record["Source"] ||
+        ""
+    ).trim();
+}
+
+function aiChatPattern(record) {
+
+    return String(
+        record.pattern ||
+        record["Pattern"] ||
+        ""
+    ).trim();
+}
+
+function aiChatFormatRecords(records, limit) {
+
+    if (!records.length) {
+        return "No matching records found in the current AI analysis.";
+    }
+
+    return records
+        .slice(0, limit || 10)
+        .map(function(record, index) {
+
+            return (
+                (index + 1) +
+                ". " +
+                aiChatEmployeeName(record) +
+                " | " +
+                aiChatSource(record) +
+                " | " +
+                aiChatErrorName(record) +
+                " | " +
+                aiChatSeverity(record) +
+                " | " +
+                aiChatPattern(record)
+            );
+
+        })
+        .join("\n");
+}
+
+function sendAIProjectChat() {
+
+    const input =
+        document.getElementById("aiChatInput");
+
+    if (!input) {
+        return;
+    }
+
+    const question =
+        input.value.trim();
+
+    if (!question) {
+        return;
+    }
+
+    aiChatAddMessage("You", question);
+
+    input.value = "";
+
+    const answer =
+        answerAIProjectQuestion(question);
+
+    aiChatAddMessage("AI", answer);
+}
+
+function answerAIProjectQuestion(question) {
+
+    if (!aiChatGetData()) {
+        return "";
+    }
+
+    const q =
+        question
+            .toLowerCase()
+            .trim();
+
+    const summary =
+        AI_CHAT_SUMMARY || {};
+
+    const records =
+        AI_CHAT_RECORDS || [];
+
+    /* -----------------------------------------------------
+       1. OVERALL PROJECT SUMMARY
+    ----------------------------------------------------- */
+
+    if (
+        q.includes("total") ||
+        q.includes("overall") ||
+        q.includes("summary") ||
+        q.includes("how many errors") ||
+        q.includes("total errors")
+    ) {
+
+        return (
+            "Current AI Error Analysis Summary:\n" +
+            "Total Errors: " +
+            (summary.total_errors || 0) +
+            "\nInternal Errors: " +
+            (summary.internal_errors || 0) +
+            "\nClient Errors: " +
+            (summary.client_errors || 0) +
+            "\nHigh: " +
+            (summary.high || 0) +
+            "\nMedium: " +
+            (summary.medium || 0) +
+            "\nLow: " +
+            (summary.low || 0) +
+            "\nEmployees Affected: " +
+            (summary.employees_affected || 0)
+        );
+    }
+
+    /* -----------------------------------------------------
+       2. SEVERITY ANALYSIS
+    ----------------------------------------------------- */
+
+    if (
+        q.includes("high") ||
+        q.includes("medium") ||
+        q.includes("low") ||
+        q.includes("severity") ||
+        q.includes("serious")
+    ) {
+
+        let wanted = "";
+
+        if (q.includes("high") || q.includes("serious")) {
+            wanted = "high";
+        }
+        else if (q.includes("medium")) {
+            wanted = "medium";
+        }
+        else if (q.includes("low")) {
+            wanted = "low";
+        }
+
+        if (!wanted) {
+
+            return (
+                "Severity Summary:\n" +
+                "High: " + (summary.high || 0) +
+                "\nMedium: " + (summary.medium || 0) +
+                "\nLow: " + (summary.low || 0)
+            );
+        }
+
+        const matches =
+            records.filter(function(record) {
+
+                return aiChatSeverity(record)
+                    .toLowerCase()
+                    .includes(wanted);
+
+            });
+
+        let action = "";
+
+        if (wanted === "high") {
+            action = "Immediate Review";
+        }
+        else if (wanted === "medium") {
+            action = "Review & Correction Required";
+        }
+        else {
+            action = "Follow-up / Closure Required";
+        }
+
+        return (
+            wanted.toUpperCase() +
+            " severity errors: " +
+            matches.length +
+            "\nRecommended Action: " +
+            action +
+            "\n\n" +
+            aiChatFormatRecords(matches, 10)
+        );
+    }
+
+    /* -----------------------------------------------------
+       3. EMPLOYEE-WISE ANALYSIS
+    ----------------------------------------------------- */
+
+    if (
+        q.includes("employee") ||
+        q.includes("user") ||
+        q.includes("person")
+    ) {
+
+        const employeeWords =
+            q
+                .replace(/which employee/gi, "")
+                .replace(/employee/gi, "")
+                .replace(/show/gi, "")
+                .replace(/tell me/gi, "")
+                .trim();
+
+        const names =
+            [...new Set(
+                records
+                    .map(aiChatEmployeeName)
+                    .filter(Boolean)
+            )];
+
+        const matchedName =
+            names.find(function(name) {
+
+                return employeeWords.includes(
+                    name.toLowerCase()
+                );
+
+            });
+
+        if (matchedName) {
+
+            const employeeRecords =
+                records.filter(function(record) {
+
+                    return aiChatEmployeeName(record)
+                        .toLowerCase() ===
+                        matchedName.toLowerCase();
+
+                });
+
+            return (
+                matchedName +
+                " has " +
+                employeeRecords.length +
+                " AI-analyzed error record(s).\n\n" +
+                aiChatFormatRecords(employeeRecords, 15)
+            );
+        }
+
+        const counts = {};
+
+        records.forEach(function(record) {
+
+            const name =
+                aiChatEmployeeName(record);
+
+            if (name) {
+                counts[name] =
+                    (counts[name] || 0) + 1;
+            }
+
+        });
+
+        const ranking =
+            Object.entries(counts)
+                .sort(function(a, b) {
+                    return b[1] - a[1];
+                })
+                .slice(0, 10);
+
+        if (!ranking.length) {
+            return "No employee error records found.";
+        }
+
+        return (
+            "Employee-wise error count:\n\n" +
+            ranking.map(function(item, index) {
+                return (
+                    (index + 1) +
+                    ". " +
+                    item[0] +
+                    " — " +
+                    item[1] +
+                    " error(s)"
+                );
+            }).join("\n")
+        );
+    }
+
+    /* -----------------------------------------------------
+       4. REPEATED ERRORS
+    ----------------------------------------------------- */
+
+    if (
+        q.includes("repeat") ||
+        q.includes("repetitive") ||
+        q.includes("again") ||
+        q.includes("same error")
+    ) {
+
+        const repetitive =
+            summary.repetitive_errors || [];
+
+        if (!repetitive.length) {
+            return "No repetitive errors were found in the current AI analysis.";
+        }
+
+        return (
+            "Repeated errors found:\n\n" +
+            repetitive
+                .slice(0, 15)
+                .map(function(item, index) {
+
+                    return (
+                        (index + 1) +
+                        ". " +
+                        (item.employee || "") +
+                        " | " +
+                        (item.error || "") +
+                        " | Pattern: " +
+                        (item.pattern || "") +
+                        " | Severity: " +
+                        (item.severity || "") +
+                        " | Repeat Count: " +
+                        (item.count || 0)
+                    );
+
+                })
+                .join("\n")
+        );
+    }
+
+    /* -----------------------------------------------------
+       5. INTERNAL VS CLIENT
+    ----------------------------------------------------- */
+
+    if (
+        q.includes("internal") ||
+        q.includes("client") ||
+        q.includes("external") ||
+        q.includes("compare")
+    ) {
+
+        const internal =
+            records.filter(function(record) {
+
+                return aiChatSource(record)
+                    .toLowerCase()
+                    .includes("internal");
+
+            });
+
+        const client =
+            records.filter(function(record) {
+
+                const source =
+                    aiChatSource(record)
+                        .toLowerCase();
+
+                return (
+                    source.includes("client") ||
+                    source.includes("external")
+                );
+
+            });
+
+        return (
+            "Internal vs Client Error Analysis:\n" +
+            "Internal: " +
+            (summary.internal_errors || internal.length) +
+            "\nClient: " +
+            (summary.client_errors || client.length) +
+            "\n\n" +
+            (
+                q.includes("internal")
+                    ? "Internal records:\n" +
+                      aiChatFormatRecords(internal, 10)
+                    : q.includes("client") ||
+                      q.includes("external")
+                    ? "Client records:\n" +
+                      aiChatFormatRecords(client, 10)
+                    : "The current analysis contains both Internal and Client error records."
+            )
+        );
+    }
+
+    /* -----------------------------------------------------
+       6. ERROR PATTERNS
+    ----------------------------------------------------- */
+
+    if (
+        q.includes("pattern") ||
+        q.includes("common error") ||
+        q.includes("most common")
+    ) {
+
+        const patternCounts = {};
+
+        records.forEach(function(record) {
+
+            const pattern =
+                aiChatPattern(record) ||
+                "Unknown";
+
+            patternCounts[pattern] =
+                (patternCounts[pattern] || 0) + 1;
+
+        });
+
+        const ranking =
+            Object.entries(patternCounts)
+                .sort(function(a, b) {
+                    return b[1] - a[1];
+                })
+                .slice(0, 10);
+
+        if (!ranking.length) {
+            return "No error pattern data is available.";
+        }
+
+        return (
+            "Most common error patterns:\n\n" +
+            ranking.map(function(item, index) {
+
+                return (
+                    (index + 1) +
+                    ". " +
+                    item[0] +
+                    " — " +
+                    item[1] +
+                    " occurrence(s)"
+                );
+
+            }).join("\n")
+        );
+    }
+
+    /* -----------------------------------------------------
+       7. REASON & RECOMMENDED ACTION
+    ----------------------------------------------------- */
+
+    if (
+        q.includes("reason") ||
+        q.includes("action") ||
+        q.includes("what should") ||
+        q.includes("recommended") ||
+        q.includes("solution")
+    ) {
+
+        let matches =
+            records;
+
+        const categoryTerms = [
+            "finance",
+            "financial",
+            "data entry",
+            "document",
+            "kyc",
+            "kops",
+            "omd",
+            "medical",
+            "zero tolarance",
+            "zero tolerance"
+        ];
+
+        const matchedCategory =
+            categoryTerms.find(function(term) {
+                return q.includes(term);
+            });
+
+        if (matchedCategory) {
+
+            matches =
+                records.filter(function(record) {
+
+                    const text =
+                        (
+                            String(record.category || "") +
+                            " " +
+                            aiChatErrorName(record)
+                        ).toLowerCase();
+
+                    return text.includes(
+                        matchedCategory
+                    );
+
+                });
+
+        }
+
+        if (!matches.length) {
+            return "No matching error records found in the current AI analysis.";
+        }
+
+        return (
+            matches
+                .slice(0, 10)
+                .map(function(record, index) {
+
+                    return (
+                        (index + 1) +
+                        ". Error: " +
+                        aiChatErrorName(record) +
+                        "\nReason: " +
+                        (record.reason || "Not available") +
+                        "\nRecommended Action: " +
+                        (record.recommended_action || "Not available")
+                    );
+
+                })
+                .join("\n\n")
+        );
+    }
+
+    /* -----------------------------------------------------
+       8. MANAGEMENT / FOCUS AREA
+    ----------------------------------------------------- */
+
+    if (
+        q.includes("management") ||
+        q.includes("focus") ||
+        q.includes("priority") ||
+        q.includes("where should") ||
+        q.includes("improve")
+    ) {
+
+        const high =
+            records.filter(function(record) {
+
+                return aiChatSeverity(record)
+                    .toLowerCase()
+                    .includes("high");
+
+            });
+
+        const repetitive =
+            summary.repetitive_errors || [];
+
+        return (
+            "Management Focus Area:\n\n" +
+            "1. High Severity Errors: " +
+            high.length +
+            "\n2. Repetitive Error Cases: " +
+            repetitive.length +
+            "\n3. Total Errors: " +
+            (summary.total_errors || records.length) +
+            "\n4. Internal Errors: " +
+            (summary.internal_errors || 0) +
+            "\n5. Client Errors: " +
+            (summary.client_errors || 0) +
+            "\n\nPriority should be based on the current AI analysis, with High severity requiring Immediate Review."
+        );
+    }
+
+    return (
+        "I can answer project-related questions from the current AI Error Analysis.\n\n" +
+        "Try:\n" +
+        "• Overall summary\n" +
+        "• High / Medium / Low severity errors\n" +
+        "• Employee-wise errors\n" +
+        "• Repeated errors\n" +
+        "• Internal vs Client errors\n" +
+        "• Common error patterns\n" +
+        "• Reason and recommended action\n" +
+        "• Management focus area"
+    );
+}
+
+const originalRunAIErrorAnalysis =
+    window.runAIErrorAnalysis;
+
+window.runAIErrorAnalysis =
+    async function() {
+
+        await originalRunAIErrorAnalysis();
+
+        /*
+         * The original function creates the result data
+         * locally, so the chatbot reads the same data by
+         * extracting the rendered AI table and summary.
+         */
+
+        try {
+
+            const resultBox =
+                document.getElementById(
+                    "aiErrorAnalysisResult"
+                );
+
+            if (!resultBox) {
+                return;
+            }
+
+            const rows =
+                resultBox.querySelectorAll(
+                    "table tbody tr"
+                );
+
+            AI_CHAT_RECORDS = [];
+
+            rows.forEach(function(row) {
+
+                const cells =
+                    row.querySelectorAll("td");
+
+                if (cells.length >= 8) {
+
+                    AI_CHAT_RECORDS.push({
+
+                        employee:
+                            cells[0].textContent.trim(),
+
+                        source:
+                            cells[1].textContent.trim(),
+
+                        error:
+                            cells[2].textContent.trim(),
+
+                        category:
+                            cells[3].textContent.trim(),
+
+                        severity_label:
+                            cells[4].textContent.trim(),
+
+                        pattern:
+                            cells[5].textContent.trim(),
+
+                        reason:
+                            cells[6].textContent.trim(),
+
+                        recommended_action:
+                            cells[7].textContent.trim()
+
+                    });
+
+                }
+
+            });
+
+            const summaryCells =
+                resultBox.querySelectorAll(
+                    "div strong"
+                );
+
+            const values = {};
+
+            summaryCells.forEach(function(item) {
+
+                const label =
+                    item.textContent
+                        .trim()
+                        .toLowerCase();
+
+                const valueBox =
+                    item.nextElementSibling;
+
+                if (!valueBox) {
+                    return;
+                }
+
+                values[label] =
+                    parseInt(
+                        valueBox.textContent.trim(),
+                        10
+                    ) || 0;
+
+            });
+
+            AI_CHAT_SUMMARY = {
+
+                total_errors:
+                    values["total errors"] || 0,
+
+                high:
+                    values["🔴 high"] || 0,
+
+                medium:
+                    values["🟠 medium"] || 0,
+
+                low:
+                    values["🟢 low"] || 0,
+
+                internal_errors:
+                    values["internal"] || 0,
+
+                client_errors:
+                    values["client"] || 0,
+
+                repetitive_errors:
+                    [],
+
+                employees_affected:
+                    new Set(
+                        AI_CHAT_RECORDS
+                            .map(function(record) {
+                                return aiChatEmployeeName(record);
+                            })
+                            .filter(Boolean)
+                    ).size
+
+            };
+
+            /*
+             * Read repetitive-error rows separately.
+             */
+            const allTables =
+                resultBox.querySelectorAll("table");
+
+            if (allTables.length > 1) {
+
+                const repeatRows =
+                    allTables[0].querySelectorAll(
+                        "tbody tr"
+                    );
+
+                AI_CHAT_SUMMARY.repetitive_errors =
+                    Array.from(repeatRows)
+                        .map(function(row) {
+
+                            const cells =
+                                row.querySelectorAll("td");
+
+                            if (cells.length < 5) {
+                                return null;
+                            }
+
+                            return {
+
+                                employee:
+                                    cells[0].textContent.trim(),
+
+                                error:
+                                    cells[1].textContent.trim(),
+
+                                pattern:
+                                    cells[2].textContent.trim(),
+
+                                severity:
+                                    cells[3].textContent.trim(),
+
+                                count:
+                                    parseInt(
+                                        cells[4].textContent.trim(),
+                                        10
+                                    ) || 0
+
+                            };
+
+                        })
+                        .filter(Boolean);
+
+            }
+
+            aiChatAddMessage(
+                "AI",
+                "Analysis loaded. You can now ask project-related questions."
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "AI chatbot data load error:",
+                error
+            );
+
+        }
+
+    };
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        const input =
+            document.getElementById(
+                "aiChatInput"
+            );
+
+        if (!input) {
+            return;
+        }
+
+        input.addEventListener(
+            "keydown",
+            function(event) {
+
+                if (
+                    event.key === "Enter"
+                ) {
+
+                    event.preventDefault();
+
+                    sendAIProjectChat();
+
+                }
+
+            }
+        );
+
+    }
+);
+</script>
+
+</body>
+
+</html>

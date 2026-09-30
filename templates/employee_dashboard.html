@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMP Tracker | Employee Dashboard</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+
+
+        /* =====================================================
+           TOP PERFORMER HIGHLIGHT
+        ===================================================== */
+
+        .top-performer {
+            position: relative;
+            border: 1px solid rgba(99, 102, 241, 0.15);
+        }
+
+        .top-performer.first-place {
+            border: 2px solid rgba(245, 158, 11, 0.55);
+            box-shadow: 0 8px 30px rgba(245, 158, 11, 0.12);
+        }
+
+        .top-performer.second-place {
+            border: 2px solid rgba(148, 163, 184, 0.55);
+        }
+
+        .top-performer.third-place {
+            border: 2px solid rgba(180, 83, 9, 0.35);
+        }
+
+        .rank-medal {
+            font-size: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 42px;
+        }
+
+        .rank-badge {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        /* =====================================================
+           PERFORMANCE CHART
+        ===================================================== */
+
+        .performance-chart-wrapper {
+            width: 100%;
+            height: 420px;
+            position: relative;
+        }
+
+        .performance-chart-wrapper canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* =====================================================
+           EMPLOYEE BLOCKS
+        ===================================================== */
+
+        .employee-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .employee-card {
+            position: relative;
+        }
+
+        /* =====================================================
+           EMPTY DATA
+        ===================================================== */
+
+        .empty-record {
+            text-align: center;
+            padding: 35px;
+            color: #888;
+        }
+
+        /* =====================================================
+           ERROR TABLE
+        ===================================================== */
+
+        .error-total {
+            font-weight: 700;
+        }
+
+        .error-zero {
+            color: #16a34a;
+        }
+
+        .error-positive {
+            color: #dc2626;
+            font-weight: 700;
+        }
+
+        /* =====================================================
+           QUALITY BADGE
+        ===================================================== */
+
+        .quality-good {
+            color: #16a34a;
+            font-weight: 700;
+        }
+
+        .quality-warning {
+            color: #d97706;
+            font-weight: 700;
+        }
+
+        /* =====================================================
+           MOBILE
+        ===================================================== */
+
+        @media (max-width: 768px) {
+
+            .performance-chart-wrapper {
+                height: 320px;
+            }
+
+            .employee-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    
+
+        .employee-info-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+        .employee-info-item { display:flex; align-items:center; gap:14px; padding:18px; border:1px solid #e5e7eb; border-radius:14px; background:#fff; }
+        .employee-info-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:#f3f4ff; color:#4f46e5; font-weight:700; flex:0 0 auto; }
+        .employee-info-item small { display:block; color:#64748b; margin-bottom:4px; }
+        .employee-info-item strong { color:#0f172a; font-size:16px; }
+        .summary-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px; }
+        .summary-item { padding:18px; border:1px solid #e5e7eb; border-radius:14px; background:#fff; }
+        .summary-item small { display:block; color:#64748b; margin-bottom:7px; }
+        .summary-item strong { font-size:22px; color:#0f172a; }
+        .employee-top-performers { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
+        .employee-top-card { min-height:92px; display:flex; align-items:center; gap:16px; padding:18px; border:1px solid rgba(99,102,241,.15); border-radius:14px; background:#fff; }
+        .employee-top-card h3 { margin:0; color:#0f172a; font-size:17px; }
+        .employee-top-card .rank-medal { flex:0 0 auto; }
+        @media (max-width:1000px) { .employee-top-performers,.summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.employee-info-grid{grid-template-columns:1fr;} }
+        @media (max-width:700px) { .employee-top-performers,.summary-grid{grid-template-columns:1fr;} }
+
+html { scroll-behavior: smooth; }
+.sidebar-nav .nav-item { text-decoration:none; }
+    .top-performers-dashboard { margin-top: 18px; }
+    .top-performers-dashboard .employee-top-card { min-height: 70px; padding: 14px; }
+    .top-performers-dashboard .employee-top-card h3 { font-size: 15px; }
+    @media (min-width: 1100px) { .top-performers-dashboard .employee-top-performers { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; } }
+
+        /* =====================================================
+           EMPLOYEE PERFORMANCE / ERROR TABLES
+        ===================================================== */
+        .employee-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 18px;
+        }
+        .employee-performance-table,
+        .employee-error-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+            min-width: 760px;
+        }
+        .employee-performance-table th,
+        .employee-performance-table td,
+        .employee-error-table th,
+        .employee-error-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+        .employee-performance-table th,
+        .employee-error-table th {
+            color: #475569;
+            font-size: 13px;
+            font-weight: 700;
+            background: #f8fafc;
+        }
+        .employee-performance-table td,
+        .employee-error-table td {
+            color: #0f172a;
+            font-size: 14px;
+        }
+        .employee-performance-table th:first-child,
+        .employee-performance-table td:first-child {
+            min-width: 170px;
+        }
+        .employee-error-table th:first-child,
+        .employee-error-table td:first-child {
+            min-width: 190px;
+        }
+        .error-type-label {
+            font-weight: 700;
+        }
+        .error-count {
+            font-weight: 700;
+        }
+        .error-count.internal {
+            color: #dc2626;
+        }
+        .error-count.client {
+            color: #d97706;
+        }
+        .error-table-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            margin-top: 18px;
+        }
+        .error-type-card {
+            margin: 0;
+        }
+        .error-type-card .card-header {
+            padding-bottom: 10px;
+        }
+        .error-type-card h3 {
+            margin: 0;
+            color: #0f172a;
+            font-size: 17px;
+        }
+        @media (max-width: 900px) {
+            .error-table-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* =====================================================
+           EMPLOYEE NAVIGATION SECTIONS
+        ===================================================== */
+        .dashboard-section {
+            display: none;
+        }
+        .dashboard-section.active {
+            display: block;
+        }
+        .top-performers-dashboard {
+            margin-top: 22px;
+        }
+        .top-performers-dashboard .employee-top-performers {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .top-performers-dashboard .employee-top-card {
+            min-height: 82px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            background: #fff;
+        }
+        .top-performers-dashboard .employee-top-card h3 {
+            margin: 0;
+            font-size: 15px;
+        }
+        @media (max-width: 900px) {
+            .top-performers-dashboard .employee-top-performers {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 600px) {
+            .top-performers-dashboard .employee-top-performers {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* =====================================================
+           EMPLOYEE AI PERFORMANCE COACH
+        ===================================================== */
+        .employee-ai-coach {
+            margin-top: 20px;
+            border: 1px solid rgba(99,102,241,.18);
+            border-radius: 16px;
+            padding: 20px;
+            background: #fff;
+        }
+        .employee-ai-coach h2 { margin:0 0 6px; }
+        .employee-ai-coach p { color:#64748b; }
+        .ai-coach-message {
+            margin-top:14px;
+            padding:16px;
+            border-radius:12px;
+            background:#f8fafc;
+            line-height:1.65;
+        }
+        .ai-coach-positive { border-left:5px solid #16a34a; }
+        .ai-coach-warning { border-left:5px solid #dc2626; }
+        .ai-coach-tip { margin-top:12px; padding:12px 14px; border-radius:10px; background:#f1f5f9; }
+
+</style>
+</head>
+<body>
+<div class="dashboard">
+<aside class="sidebar" id="employeeSidebar">
+    <div class="logo">
+        <div class="logo-icon"><i class="fa-solid fa-chart-pie"></i></div>
+        <div class="logo-text"><div class="cpt-team">🚀 CPT-TEAM</div><h2>EMP Tracker</h2><span>Employee Dashboard</span></div>
+    </div>
+    <nav class="sidebar-nav">
+        <a class="nav-item active" href="#dashboard"><i class="fa-solid fa-house"></i><span>Dashboard</span></a>
+        <a class="nav-item" href="#my-performance-section"><i class="fa-solid fa-chart-line"></i><span>My Performance</span></a>
+        <a class="nav-item" href="#my-errors-section"><i class="fa-solid fa-triangle-exclamation"></i><span>My Errors</span></a>
+        <a class="nav-item" href="#my-targets-section"><i class="fa-solid fa-bullseye"></i><span>My Targets</span></a>
+        <a class="nav-item" href="#my-profile-section"><i class="fa-solid fa-user"></i><span>My Profile</span></a>
+    </nav>
+    <div class="sidebar-bottom">
+        <a href="{{ url_for('logout') }}" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
+    </div>
+</aside>
+<main class="main-content">
+<header class="topbar">
+    <div class="mobile-menu-btn" onclick="toggleEmployeeSidebar()"><i class="fa-solid fa-bars"></i></div>
+    <div class="page-heading"><h1>Employee Dashboard</h1><p>Your productivity overview</p></div>
+    <div class="admin-profile">
+        <div class="admin-avatar">{{ employee.get('User Name', employee.get('USERNAME', 'E'))[:1]|upper }}</div>
+        <div><strong>{{ employee.get('User Name', employee.get('USERNAME', employee.get('Username', 'Employee'))) }}</strong><small>Employee</small></div>
+    </div>
+</header>
+<section class="dashboard-section active" id="dashboard">
+    <div class="welcome-card">
+        <div><span class="welcome-small">{{ greeting }}</span><h2>Welcome, {{ employee.get('User Name', employee.get('USERNAME', 'Employee')) }}</h2><p>Here is your current productivity and quality overview.</p></div>
+    </div>
+
+    <div class="content-card employee-ai-coach">
+        <div class="card-header">
+            <div>
+                <h2>🤖 AI Performance Coach</h2>
+                <p>Personalized feedback based on your current error record</p>
+            </div>
+        </div>
+
+        {% set ai_total_errors = employee.get('Total Errors', employee.get('Errors', employee.get('ERROR', 0)))|int %}
+        {% set ai_internal_errors = employee.get('Internal Errors', 0)|int %}
+        {% set ai_client_errors = employee.get('Vendor Errors', employee.get('Client Errors', 0))|int %}
+
+        {% if ai_total_errors == 0 %}
+            <div class="ai-coach-message ai-coach-positive">
+                <strong>🎉 WELL DONE!</strong><br>
+                You currently have <strong>0 errors</strong>.
+                Excellent accuracy and consistency! ⭐<br>
+                Keep maintaining this quality and continue your great work. 👏
+            </div>
+        {% else %}
+            <div class="ai-coach-message ai-coach-warning">
+                <strong>💡 Improvement Focus</strong><br>
+                You currently have <strong>{{ ai_total_errors }}</strong> error(s).
+                Please review your error details and focus on preventing repeated mistakes.
+            </div>
+
+            {% if internal_error_details %}
+                <div class="ai-coach-tip">
+                    <strong>🔁 Error patterns to watch:</strong><br>
+                    {% for item in internal_error_details %}
+                        {% if item['count']|int > 1 %}
+                            • <strong>{{ item['type'] }}</strong> — repeated {{ item['count'] }} time(s).<br>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if ai_internal_errors > 0 or ai_client_errors > 0 %}
+                <div class="ai-coach-tip">
+                    <strong>🎯 Next Step:</strong>
+                    Check the <strong>My Errors</strong> section, identify repeated error types,
+                    and verify the required information before completing each case.
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon purple"><i class="fa-solid fa-box"></i></div><div><span class="stat-label">Total Production</span><h3>{{ "{:,.0f}".format(employee.get('Total Production', employee.get('Production', employee.get('TOTAL', 0)))|float) }}</h3></div></div>
+        <div class="stat-card"><div class="stat-icon blue"><i class="fa-solid fa-bullseye"></i></div><div><span class="stat-label">Daily Target</span><h3>{{ employee.get('Target', employee.get('Daily Target', 0)) }}</h3></div></div>
+        <div class="stat-card"><div class="stat-icon green"><i class="fa-solid fa-percent"></i></div><div><span class="stat-label">Productivity</span><h3>{{ "%.2f"|format(employee.get('Productivity', employee.get('Productivity %', 0))|float) }}%</h3></div></div>
+        <div class="stat-card"><div class="stat-icon orange"><i class="fa-solid fa-triangle-exclamation"></i></div><div><span class="stat-label">Total Errors</span><h3>{{ employee.get('Total Errors', employee.get('Errors', employee.get('ERROR', 0))) }}</h3></div></div>
+        <div class="stat-card"><div class="stat-icon green"><i class="fa-solid fa-circle-check"></i></div><div><span class="stat-label">Quality</span><h3>{{ "%.2f"|format(employee.get('Quality %', 0)|float) }}%</h3></div></div>
+    </div>
+    <div class="content-card top-performers-dashboard">
+        <div class="card-header"><div><h2>Top Performers</h2><p>Highest productivity employees</p></div></div>
+        <div class="employee-top-performers">
+            {% for performer in leaderboard[:5] %}
+            <div class="employee-top-card {% if loop.index == 1 %}top-performer first-place{% elif loop.index == 2 %}top-performer second-place{% elif loop.index == 3 %}top-performer third-place{% endif %}">
+                <span class="rank-medal">{% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}🏅{% endif %}</span>
+                <h3>{{ performer['User Name'] }}</h3>
+            </div>
+            {% else %}<div class="empty-record">No employee records found.</div>{% endfor %}
+        </div>
+    </div>
+
+</section>
+
+<section class="dashboard-section" id="my-performance-section">
+<div class="content-card" id="my-performance">
+        <div class="card-header"><div><h2>My Performance</h2><p>Current employee performance details</p></div></div>
+        <div class="summary-grid">
+            <div class="summary-item"><small>Productivity</small><strong>{{ "%.2f"|format(employee.get('Productivity', employee.get('Productivity %', 0))|float) }}%</strong></div>
+            <div class="summary-item"><small>Quality</small><strong>{{ "%.2f"|format(employee.get('Quality %', 0)|float) }}%</strong></div>
+            <div class="summary-item"><small>Production</small><strong>{{ "{:,.0f}".format(employee.get('Total Production', employee.get('Production', employee.get('TOTAL', 0)))|float) }}</strong></div>
+            <div class="summary-item"><small>Period Target</small><strong>{{ "{:,.0f}".format(employee.get('Period Target', 0)|float) }}</strong></div>
+        </div>
+        <div class="employee-table-wrapper">
+            <table class="employee-performance-table">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>User ID</th>
+                        <th>Daily Target</th>
+                        <th>Period Target</th>
+                        <th>Production</th>
+                        <th>Productivity</th>
+                        <th>Errors</th>
+                        <th>Quality</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>{{ employee.get('User Name', employee.get('USERNAME', employee.get('Username', 'Employee'))) }}</strong></td>
+                        <td>ipruXXXXX</td>
+                        <td>{{ employee.get('Target', employee.get('Daily Target', 0)) }}</td>
+                        <td>{{ "{:,.0f}".format(employee.get('Period Target', 0)|float) }}</td>
+                        <td>{{ "{:,.0f}".format(employee.get('Total Production', employee.get('Production', employee.get('TOTAL', 0)))|float) }}</td>
+                        <td><span class="percentage-badge">{{ "%.2f"|format(employee.get('Productivity', employee.get('Productivity %', 0))|float) }}%</span></td>
+                        <td>{{ employee.get('Total Errors', employee.get('Errors', employee.get('ERROR', 0))) }}</td>
+                        <td><span class="quality-badge">{{ "%.2f"|format(employee.get('Quality %', 0)|float) }}%</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    
+</section>
+
+<section class="dashboard-section" id="my-errors-section">
+<div class="content-card" id="my-errors">
+        <div class="card-header"><div><h2>My Errors</h2><p>Internal and client error details</p></div></div>
+        <div class="summary-grid">
+            <div class="summary-item"><small>Internal Errors</small><strong>{{ employee.get('Internal Errors', 0) }}</strong></div>
+            <div class="summary-item"><small>Client Errors</small><strong>{{ employee.get('Vendor Errors', employee.get('Client Errors', 0)) }}</strong></div>
+            <div class="summary-item"><small>Total Errors</small><strong>{{ employee.get('Total Errors', 0) }}</strong></div>
+            <div class="summary-item"><small>Error %</small><strong>{{ "%.2f"|format(employee.get('Error %', 0)|float) }}%</strong></div>
+        </div>
+
+        <div class="error-table-grid">
+            <div class="content-card error-type-card">
+                <div class="card-header"><div><h3>Internal Error Types</h3><p>Internal error category-wise count</p></div></div>
+                <div class="employee-table-wrapper">
+                    <table class="employee-error-table">
+                        <thead>
+                            <tr>
+                                <th>Error Type</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in internal_error_details %}
+                            <tr>
+                                <td class="error-type-label">{{ item['type'] }}</td>
+                                <td><span class="error-count internal">{{ item['count'] }}</span></td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="2" class="empty-record">No internal error types found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="content-card error-type-card">
+                <div class="card-header"><div><h3>Client Error Types</h3><p>Client error category-wise count</p></div></div>
+                <div class="employee-table-wrapper">
+                    <table class="employee-error-table">
+                        <thead>
+                            <tr>
+                                <th>Error Type</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in client_error_details %}
+                            <tr>
+                                <td class="error-type-label">{{ item['type'] }}</td>
+                                <td><span class="error-count client">{{ item['count'] }}</span></td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="2" class="empty-record">No client error types found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+</section>
+
+<section class="dashboard-section" id="my-targets-section">
+<div class="content-card" id="my-targets">
+        <div class="card-header"><div><h2>My Targets</h2><p>Your assigned production targets</p></div></div>
+        <div class="summary-grid">
+            <div class="summary-item"><small>Daily Target</small><strong>{{ employee.get('Target', employee.get('Daily Target', 0)) }}</strong></div>
+            <div class="summary-item"><small>Period Target</small><strong>{{ "{:,.0f}".format(employee.get('Period Target', 0)|float) }}</strong></div>
+            <div class="summary-item"><small>Actual Production</small><strong>{{ "{:,.0f}".format(employee.get('Total Production', employee.get('Production', employee.get('TOTAL', 0)))|float) }}</strong></div>
+            <div class="summary-item"><small>Achievement</small><strong>{{ "%.2f"|format(employee.get('Productivity', employee.get('Productivity %', 0))|float) }}%</strong></div>
+        </div>
+    </div>
+
+    
+</section>
+
+<section class="dashboard-section" id="my-profile-section">
+<div class="content-card" id="my-profile">
+        <div class="card-header"><div><h2>Employee Information</h2><p>Your registered details</p></div></div>
+        <div class="employee-info-grid">
+            <div class="employee-info-item"><div class="employee-info-icon">ID</div><div><small>User ID</small><strong>ipruXXXXX</strong></div></div>
+            <div class="employee-info-item"><div class="employee-info-icon">S</div><div><small>Schedule</small><strong>{{ employee.get('Schedule', '-') }}</strong></div></div>
+            <div class="employee-info-item"><div class="employee-info-icon">L</div><div><small>Location</small><strong>{{ employee.get('Location', '-') }}</strong></div></div>
+            <div class="employee-info-item"><div class="employee-info-icon">T</div><div><small>Daily Target</small><strong>{{ employee.get('Target', employee.get('Daily Target', 0)) }}</strong></div></div>
+        </div>
+    </div>
+
+    
+</section>
+</main>
+</div>
+<script>
+function toggleEmployeeSidebar(){
+    const s=document.getElementById('employeeSidebar');
+    if(s) s.classList.toggle('open');
+}
+
+(function(){
+    const links = Array.from(document.querySelectorAll('.sidebar-nav .nav-item'));
+    const sections = Array.from(document.querySelectorAll('.dashboard-section'));
+
+    const sectionMap = {
+        'dashboard': 'dashboard',
+        'my-performance-section': 'my-performance-section',
+        'my-errors-section': 'my-errors-section',
+        'my-targets-section': 'my-targets-section',
+        'my-profile-section': 'my-profile-section'
+    };
+
+    function showSection(id, updateHash=true){
+        const target = sectionMap[id] ? sectionMap[id] : 'dashboard';
+        sections.forEach(function(section){
+            section.classList.toggle('active', section.id === target);
+        });
+        links.forEach(function(link){
+            const href = link.getAttribute('href') || '';
+            link.classList.toggle('active', href === '#' + target);
+        });
+        if(updateHash){
+            history.replaceState(null, '', '#' + target);
+        }
+        const sidebar=document.getElementById('employeeSidebar');
+        if(sidebar) sidebar.classList.remove('open');
+        window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    links.forEach(function(link){
+        link.addEventListener('click', function(event){
+            event.preventDefault();
+            const href=(this.getAttribute('href') || '#dashboard').substring(1);
+            showSection(href, true);
+        });
+    });
+
+    window.addEventListener('hashchange', function(){
+        showSection((window.location.hash || '#dashboard').substring(1), false);
+    });
+
+    const initial=(window.location.hash || '#dashboard').substring(1);
+    showSection(initial, false);
+})();
+</script>
+</body>
+</html>

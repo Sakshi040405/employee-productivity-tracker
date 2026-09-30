@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>EMP Tracker - Admin</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+
+<body>
+
+<div class="dashboard">
+
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-logo">
+
+            <div class="logo-icon">
+                E
+            </div>
+
+            <div class="logo-text">
+
+                <h2>EMP Tracker</h2>
+
+                <span>Performance System</span>
+
+            </div>
+
+        </div>
+
+
+        <nav class="sidebar-nav">
+
+            <button class="nav-item active"
+                    onclick="showSection('overview', this)">
+
+                <i class="fa-solid fa-chart-pie"></i>
+
+                <span>Overview</span>
+
+            </button>
+
+
+            <button class="nav-item"
+                    onclick="showSection('performance', this)">
+
+                <i class="fa-solid fa-chart-column"></i>
+
+                <span>Performance</span>
+
+            </button>
+
+
+            <button class="nav-item"
+                    onclick="showSection('leaderboard', this)">
+
+                <i class="fa-solid fa-trophy"></i>
+
+                <span>Leaderboard</span>
+
+            </button>
+
+
+            <button class="nav-item"
+                    onclick="showSection('production', this)">
+
+                <i class="fa-solid fa-box"></i>
+
+                <span>Production</span>
+
+            </button>
+
+
+            <button class="nav-item"
+                    onclick="showSection('quality', this)">
+
+                <i class="fa-solid fa-circle-check"></i>
+
+                <span>Quality</span>
+
+            </button>
+
+
+            <!-- NEW ERRORS NAVIGATION -->
+
+            <button class="nav-item"
+                    onclick="showSection('errors', this)">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                <span>Errors</span>
+
+            </button>
+
+
+            <button class="nav-item"
+                    onclick="showSection('employees', this)">
+
+                <i class="fa-solid fa-users"></i>
+
+                <span>Employees</span>
+
+            </button>
+
+
+            <button class="nav-item"
+                    onclick="showSection('reports', this)">
+
+                <i class="fa-solid fa-file-lines"></i>
+
+                <span>Reports</span>
+
+            </button>
+
+
+            <a href="{{ url_for('logout') }}"
+               class="nav-item logout-item">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                <span>Logout</span>
+
+            </a>
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+            <div class="help-box">
+
+                <i class="fa-solid fa-circle-info"></i>
+
+                <div>
+
+                    <strong>Admin Panel</strong>
+
+                    <p>
+                        Monitor employee
+                        productivity and quality.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+    ====================================================== -->
+
+    <main class="main-content">
+
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <button class="mobile-menu-btn"
+                        onclick="adminToggleSidebar()">
+
+                    <i class="fa-solid fa-bars"></i>
+
+                </button>
+
+
+                <div>
+
+                    <h1 id="adminPageTitle">
+                        Overview
+                    </h1>
+
+                    <p id="adminPageSubtitle">
+                        Your productivity dashboard at a glance
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="admin-profile">
+
+                <div class="avatar">
+                    A
+                </div>
+
+                <div>
+
+                    <strong>Admin</strong>
+
+                    <small>
+                        Administrator
+                    </small>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- =================================================
+             OVERVIEW
+        ================================================== -->
+
+        <section id="overview"
+                 class="dashboard-section active">
+
+
+            <!-- WELCOME -->
+
+            <div class="welcome-banner">
+
+                <div>
+
+                    <span class="welcome-label">
+                        ADMIN DASHBOARD
+                    </span>
+
+                    <h2>
+                        Good Morning, Admin 👋
+                    </h2>
+
+                    <p>
+                        Here's your team's performance overview.
+                    </p>
+
+                </div>
+
+                <div class="welcome-icon">
+
+                    <i class="fa-solid fa-chart-line"></i>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- KPI -->
+
+            <div class="kpi-grid">
+
+
+                <div class="kpi-card">
+
+                    <div class="kpi-icon purple">
+
+                        <i class="fa-solid fa-box"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>Total Production</span>
+
+                        <h2>
+
+                            {% if employees %}
+
+                                {{ employees |
+                                   sum(attribute='Total Production') }}
+
+                            {% else %}
+
+                                0
+
+                            {% endif %}
+
+                        </h2>
+
+                        <small>
+                            Current period
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="kpi-card">
+
+                    <div class="kpi-icon blue">
+
+                        <i class="fa-solid fa-users"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>Total Employees</span>
+
+                        <h2>
+                            {{ employees|length }}
+                        </h2>
+
+                        <small>
+                            Active employees
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="kpi-card">
+
+                    <div class="kpi-icon green">
+
+                        <i class="fa-solid fa-chart-line"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>Avg Productivity</span>
+
+                        <h2>
+
+                            {% if employees %}
+
+                                {{
+                                    "%.1f"|format(
+                                        employees |
+                                        sum(attribute='Productivity %')
+                                        / employees|length
+                                    )
+                                }}%
+
+                            {% else %}
+
+                                0%
+
+                            {% endif %}
+
+                        </h2>
+
+                        <small>
+                            Team average
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="kpi-card">
+
+                    <div class="kpi-icon orange">
+
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>Total Errors</span>
+
+                        <h2>
+
+                            {% if employees %}
+
+                                {{ employees |
+                                   sum(attribute='Total Errors') }}
+
+                            {% else %}
+
+                                0
+
+                            {% endif %}
+
+                        </h2>
+
+                        <small>
+                            Error monitoring
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- CHARTS -->
+
+            <div class="dashboard-grid">
+
+
+                <!-- PRODUCTION -->
+
+                <div class="chart-card">
+
+                    <div class="card-header">
+
+                        <div>
+
+                            <h2>
+                                Production Overview
+                            </h2>
+
+                            <p>
+                                Daily CPT + Financial Pool production
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="chart-container">
+
+                        <canvas id="adminProductionChart"></canvas>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- QUICK SUMMARY -->
+
+                <div class="summary-card">
+
+                    <div class="card-header">
+
+                        <div>
+
+                            <h2>
+                                Quick Summary
+                            </h2>
+
+                            <p>
+                                Team overview
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span>Employees</span>
+
+                        <strong>
+                            {{ employees|length }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span>Production Records</span>
+
+                        <strong>
+                            {{ production|length }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span>Error Records</span>
+
+                        <strong>
+                            {{ errors|length }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span>Leaderboard</span>
+
+                        <strong>
+                            {{ leaderboard|length }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- TOP 3 -->
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Top Performers
+                    </h2>
+
+                    <p>
+                        Employees with highest productivity
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="top-three">
+
+                {% for employee in leaderboard[:3] %}
+
+                <div class="leader-card">
+
+                    <div class="rank-badge">
+
+                        {% if employee.rank == 1 %}
+                            🥇
+                        {% elif employee.rank == 2 %}
+                            🥈
+                        {% else %}
+                            🥉
+                        {% endif %}
+
+                    </div>
+
+
+                    <h3>
+                        {{ employee.name }}
+                    </h3>
+
+
+                    <span class="employee-id">
+
+                        ID:
+                        {{ employee.employee_id }}
+
+                    </span>
+
+
+                    <div class="performance">
+
+                        <div>
+
+                            <span>Productivity</span>
+
+                            <strong>
+                                {{ employee.productivity }}%
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>Quality</span>
+
+                            <strong>
+                                {{ employee.quality }}%
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="leader-footer">
+
+                        <span>
+                            Production:
+                            {{ employee.production }}
+                        </span>
+
+                        <span>
+                            Errors:
+                            {{ employee.errors }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             PERFORMANCE
+        ================================================== -->
+
+        <section id="performance"
+                 class="dashboard-section">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Employee Performance
+                    </h2>
+
+                    <p>
+                        Employee-wise productivity analysis
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="chart-card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Productivity by Employee
+                        </h2>
+
+                        <p>
+                            Productivity percentage comparison
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="chart-container"
+                     style="height:auto; min-height:340px;">
+
+                    <canvas id="productivityChart"></canvas>
+
+                </div>
+
+            </div>
+
+
+            <div class="data-card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Performance Details
+                        </h2>
+
+                        <p>
+                            Complete employee performance
+                        </p>
+
+                    </div>
+
+                    <input type="text"
+                           class="table-search"
+                           placeholder="Search employee..."
+                           onkeyup="filterAdminTable(this)">
+
+                </div>
+
+
+                <div class="table-container">
+
+                    <table id="adminPerformanceTable">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Rank</th>
+                                <th>Employee</th>
+                                <th>Employee ID</th>
+                                <th>Productivity</th>
+                                <th>Quality</th>
+                                <th>Production</th>
+                                <th>Errors</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for employee in leaderboard %}
+
+                            <tr>
+
+                                <td>
+                                    #{{ employee.rank }}
+                                </td>
+
+                                <td>
+                                    <strong>
+                                        {{ employee.name }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ employee.employee_id }}
+                                </td>
+
+                                <td>
+                                    {{ employee.productivity }}%
+                                </td>
+
+                                <td>
+                                    {{ employee.quality }}%
+                                </td>
+
+                                <td>
+                                    {{ employee.production }}
+                                </td>
+
+                                <td>
+                                    {{ employee.errors }}
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             LEADERBOARD
+        ================================================== -->
+
+        <section id="leaderboard"
+                 class="dashboard-section">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        🏆 Employee Leaderboard
+                    </h2>
+
+                    <p>
+                        Team productivity ranking
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="leaderboard-table">
+
+                <table id="adminLeaderboardTable">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Rank</th>
+                            <th>Employee</th>
+                            <th>Employee ID</th>
+                            <th>Productivity</th>
+                            <th>Quality</th>
+                            <th>Production</th>
+                            <th>Errors</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for employee in leaderboard %}
+
+                        <tr>
+
+                            <td>
+
+                                <span class="rank-number">
+                                    #{{ employee.rank }}
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                <strong>
+                                    {{ employee.name }}
+                                </strong>
+
+                            </td>
+
+                            <td>
+                                {{ employee.employee_id }}
+                            </td>
+
+                            <td>
+                                {{ employee.productivity }}%
+                            </td>
+
+                            <td>
+                                {{ employee.quality }}%
+                            </td>
+
+                            <td>
+                                {{ employee.production }}
+                            </td>
+
+                            <td>
+                                {{ employee.errors }}
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             PRODUCTION
+        ================================================== -->
+
+        <section id="production"
+                 class="dashboard-section">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Production Records
+                    </h2>
+
+                    <p>
+                        Employee production data
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="data-card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Production Records
+                        </h2>
+
+                        <p>
+                            Employee-wise production totals
+                        </p>
+
+                    </div>
+
+                    <input type="text"
+                           class="table-search"
+                           placeholder="Search employee..."
+                           onkeyup="filterAdminTable(this)">
+
+                </div>
+
+
+                <div class="table-container">
+
+                    <table id="adminProductionTable">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Employee</th>
+                                <th>Employee ID</th>
+                                <th>Schedule</th>
+                                <th>Location</th>
+                                <th>Target</th>
+                                <th>Total Production</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for row in production %}
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>
+                                        {{ row["User Name"] }}
+                                    </strong>
+
+                                </td>
+
+                                <td>
+                                    {{ row["User ID's"] }}
+                                </td>
+
+                                <td>
+                                    {{ row["Schedule"] }}
+                                </td>
+
+                                <td>
+                                    {{ row["Location"] }}
+                                </td>
+
+                                <td>
+                                    {{ row["Target"] }}
+                                </td>
+
+                                <td>
+                                    {{ row["TOTAL"] }}
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             QUALITY
+        ================================================== -->
+
+        <section id="quality"
+                 class="dashboard-section">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Quality Monitoring
+                    </h2>
+
+                    <p>
+                        Employee quality performance
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="data-card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Quality Overview
+                        </h2>
+
+                        <p>
+                            Quality percentage and total errors
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="table-container">
+
+                    <table id="adminQualityTable">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Employee</th>
+                                <th>Employee ID</th>
+                                <th>Quality</th>
+                                <th>Total Errors</th>
+                                <th>Total Production</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for employee in employees %}
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>
+                                        {{ employee["User Name"] }}
+                                    </strong>
+
+                                </td>
+
+                                <td>
+                                    {{ employee["User ID's"] }}
+                                </td>
+
+                                <td>
+                                    {{ employee["Quality %"] }}%
+                                </td>
+
+                                <td>
+                                    {{ employee["Total Errors"] }}
+                                </td>
+
+                                <td>
+                                    {{ employee["Total Production"] }}
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             ERRORS
+        ================================================== -->
+
+        <section id="errors"
+                 class="dashboard-section">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        Error Monitoring
+                    </h2>
+
+                    <p>
+                        Category-wise employee error details
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="data-card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Error Categories
+                        </h2>
+
+                        <p>
+                            COPS / Kyc, Finance, Medical, OMD and Zero Tolarance
+                        </p>
+
+                    </div>
+
+                    <input type="text"
+                           class="table-search"
+                           placeholder="Search employee..."
+                           onkeyup="filterAdminTable(this)">
+
+                </div>
+
+
+                <div class="table-container">
+
+                    <table id="adminErrorsTable">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Employee</th>
+                                <th>COPS / Kyc</th>
+                                <th>Finance</th>
+                                <th>Medical</th>
+                                <th>OMD</th>
+                                <th>Zero Tolarance</th>
+                                <th>Total Errors</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for row in errors %}
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>
+                                        {{ row["User Name"] }}
+                                    </strong>
+
+                                </td>
+
+
+                                <td>
+                                    {{ row["COPS / Kyc"] | default(0) }}
+                                </td>
+
+
+                                <td>
+                                    {{ row["Finance"] | default(0) }}
+                                </td>
+
+
+                                <td>
+                                    {{ row["Medical"] | default(0) }}
+                                </td>
+
+
+                                <td>
+                                    {{ row["OMD"] | default(0) }}
+                                </td>
+
+
+                                <td>
+                                    {{ row["Zero Tolarance"] | default(0) }}
+                                </td>
+
+
+                                <td>
+
+                                    <strong>
+                                        {{ row["Total Errors"] | default(0) }}
+                                    </strong>
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             EMPLOYEES
+        ================================================== -->
+
+        <section id="employees"
+                 class="dashboard-section">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Employees
+                    </h2>
+
+                    <p>
+                        Employee information and performance
+                    </p>
+
+                </div>
+
+                <input type="text"
+                       class="table-search"
+                       placeholder="Search employee..."
+                       onkeyup="filterEmployeeCards(this)">
+
+            </div>
+
+
+            <div class="employee-grid">
+
+                {% for employee in employees %}
+
+                <div class="employee-card">
+
+                    <div class="employee-avatar">
+
+                        {{ employee["User Name"][0] | upper }}
+
+                    </div>
+
+
+                    <div class="employee-info">
+
+                        <h3>
+                            {{ employee["User Name"] }}
+                        </h3>
+
+                        <span>
+                            ID: {{ employee["User ID's"] }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="employee-stats">
+
+                        <div>
+
+                            <span>Productivity</span>
+
+                            <strong>
+                                {{ employee["Productivity %"] }}%
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>Quality</span>
+
+                            <strong>
+                                {{ employee["Quality %"] }}%
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>Production</span>
+
+                            <strong>
+                                {{ employee["Total Production"] }}
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>Errors</span>
+
+                            <strong>
+                                {{ employee["Total Errors"] }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             REPORTS
+        ================================================== -->
+
+        <section id="reports"
+                 class="dashboard-section">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Reports
+                    </h2>
+
+                    <p>
+                        Employee productivity and quality reports
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="reports-grid">
+
+                <div class="report-card">
+
+                    <div class="report-icon">
+
+                        <i class="fa-solid fa-chart-column"></i>
+
+                    </div>
+
+                    <h3>
+                        Productivity Report
+                    </h3>
+
+                    <p>
+                        View employee productivity
+                        and production information.
+                    </p>
+
+                </div>
+
+
+                <div class="report-card">
+
+                    <div class="report-icon">
+
+                        <i class="fa-solid fa-shield-halved"></i>
+
+                    </div>
+
+                    <h3>
+                        Quality Report
+                    </h3>
+
+                    <p>
+                        View quality percentage
+                        and error monitoring.
+                    </p>
+
+                </div>
+
+
+                <div class="report-card">
+
+                    <div class="report-icon">
+
+                        <i class="fa-solid fa-users"></i>
+
+                    </div>
+
+                    <h3>
+                        Employee Report
+                    </h3>
+
+                    <p>
+                        View employee-wise
+                        performance information.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             FOOTER
+        ================================================== -->
+
+        <footer>
+
+            EMP Tracker © 2026
+            <span>|</span>
+            Employee Productivity & Quality System
+
+        </footer>
+
+
+    </main>
+
+</div>
+
+
+
+<!-- =====================================================
+     JAVASCRIPT DATA
+====================================================== -->
+
+<script>
+
+window.ADMIN_DAILY_PRODUCTION =
+    {{ daily_production | tojson | safe }};
+
+
+window.ADMIN_LEADERBOARD =
+    {{ leaderboard | tojson | safe }};
+
+</script>
+
+
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+
+</body>
+
+</html>

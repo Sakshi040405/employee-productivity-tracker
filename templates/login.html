@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Techsurance | EMP Tracker | Login</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7fb;
+        }
+
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px;
+            background: #f4f7fb;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 1180px;
+            min-height: 650px;
+            display: grid;
+            grid-template-columns: 1.05fr 1fr;
+            background: #ffffff;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+        }
+
+        /* =========================
+           LEFT BLUE PANEL
+        ========================= */
+
+        .login-left {
+            position: relative;
+            overflow: hidden;
+            padding: 65px 75px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: linear-gradient(
+                145deg,
+                #2454d8 0%,
+                #2864ed 55%,
+                #2563eb 100%
+            );
+            color: #ffffff;
+        }
+
+        .login-left::before {
+            content: "";
+            position: absolute;
+            width: 360px;
+            height: 360px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            top: -135px;
+            right: -105px;
+        }
+
+        .login-left::after {
+            content: "";
+            position: absolute;
+            width: 230px;
+            height: 230px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.035);
+            bottom: -120px;
+            left: -90px;
+        }
+
+        .brand-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .brand-icon {
+            width: 68px;
+            height: 68px;
+            border-radius: 17px;
+            background: rgba(255,255,255,0.16);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 52px;
+            backdrop-filter: blur(5px);
+        }
+
+        .brand-icon svg {
+            width: 36px;
+            height: 36px;
+            stroke: #ffffff;
+            stroke-width: 2.5;
+            fill: none;
+        }
+
+        .brand-title {
+            margin: 0;
+            font-size: 42px;
+            line-height: 1.1;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .brand-subtitle {
+            margin: 12px 0 0;
+            max-width: 390px;
+            font-size: 19px;
+            line-height: 1.55;
+            color: rgba(255,255,255,0.88);
+        }
+
+        .brand-description {
+            margin-top: 38px;
+            max-width: 400px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: rgba(255,255,255,0.72);
+        }
+
+        /* =========================
+           RIGHT PANEL
+        ========================= */
+
+        .login-right {
+            padding: 65px 68px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .header-icon {
+            width: 74px;
+            height: 74px;
+            margin: 0 auto 22px;
+            border-radius: 18px;
+            background: #eef5ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-icon svg {
+            width: 36px;
+            height: 36px;
+            stroke: #2563eb;
+            stroke-width: 2.6;
+            fill: none;
+        }
+
+        .login-header h1 {
+            margin: 0;
+            color: #111827;
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: -0.7px;
+        }
+
+        .login-header p {
+            margin: 10px 0 0;
+            color: #64748b;
+            font-size: 15px;
+        }
+
+        /* =========================
+           FLASH MESSAGE
+        ========================= */
+
+        .flash-message {
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            color: #dc2626;
+            font-size: 13px;
+        }
+
+        /* =========================
+           LOGIN AS
+        ========================= */
+
+        .login-as-title {
+            margin-bottom: 11px;
+            color: #111827;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .role-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .role-option {
+            position: relative;
+        }
+
+        .role-option input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .role-label {
+            min-height: 112px;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            cursor: pointer;
+            background: #ffffff;
+            color: #64748b;
+            transition: 0.2s ease;
+        }
+
+        .role-label:hover {
+            border-color: #93b4ff;
+            background: #f8fbff;
+        }
+
+        .role-option input:checked + .role-label {
+            border: 2px solid #3478f6;
+            background: #f1f6ff;
+            color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37,99,235,0.04);
+        }
+
+        .role-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .role-option input:checked + .role-label .role-icon {
+            background: #ffffff;
+        }
+
+        .role-icon svg {
+            width: 25px;
+            height: 25px;
+            stroke: #2563eb;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .role-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* =========================
+           FORM
+        ========================= */
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 17px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .form-group label {
+            color: #1f2937;
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #d7dee8;
+            border-radius: 10px;
+            outline: none;
+            color: #111827;
+            background: #ffffff;
+            font-size: 14px;
+            transition: 0.2s ease;
+        }
+
+        .form-group input:focus {
+            border-color: #3478f6;
+            box-shadow: 0 0 0 3px rgba(52,120,246,0.10);
+        }
+
+        .form-group input::placeholder {
+            color: #9ca3af;
+        }
+
+        .login-button {
+            width: 100%;
+            margin-top: 4px;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 10px;
+            background: #2563eb;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .login-button:hover {
+            background: #1d4ed8;
+        }
+
+        .login-button:active {
+            transform: translateY(1px);
+        }
+
+        .login-info {
+            margin-top: 21px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 11px;
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 900px) {
+            .login-container {
+                grid-template-columns: 1fr;
+                max-width: 550px;
+            }
+
+            .login-left {
+                min-height: 300px;
+                padding: 45px;
+            }
+
+            .brand-icon {
+                margin-bottom: 25px;
+            }
+
+            .brand-title {
+                font-size: 34px;
+            }
+
+            .brand-subtitle {
+                font-size: 16px;
+            }
+
+            .brand-description {
+                display: none;
+            }
+
+            .login-right {
+                padding: 45px;
+            }
+        }
+
+        @media (max-width: 550px) {
+            .login-page {
+                padding: 12px;
+            }
+
+            .login-container {
+                border-radius: 20px;
+            }
+
+            .login-left {
+                padding: 35px 28px;
+                min-height: 250px;
+            }
+
+            .login-right {
+                padding: 35px 25px;
+            }
+
+            .brand-title {
+                font-size: 30px;
+            }
+
+            .login-header h1 {
+                font-size: 28px;
+            }
+
+            .role-options {
+                gap: 9px;
+            }
+        }
+    
+        /* TECHSURANCE COMPANY BRANDING */
+        .techsurance-login-logo {
+            width: 250px;
+            max-width: 85%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+            margin: 0 auto 28px;
+        }
+        .techsurance-company-name {
+            margin: 0 0 8px;
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: 1.8px;
+            color: rgba(255,255,255,0.92);
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="login-page">
+
+    <div class="login-container">
+
+        <!-- =========================
+             LEFT SIDE
+        ========================== -->
+
+        <div class="login-left">
+
+            <div class="brand-content">
+
+
+                <img
+                    src="data:image/webp;base64,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"
+                    alt="Techsurance"
+                    class="techsurance-login-logo"
+                >
+
+                <div class="brand-icon">
+
+                    <svg viewBox="0 0 40 40">
+                        <path d="M7 31V20"></path>
+                        <path d="M7 31H34"></path>
+                        <path d="M10 26L17 19L22 23L32 12"></path>
+                        <path d="M27 12H32V17"></path>
+                    </svg>
+
+                </div>
+
+                <h1 class="brand-title">
+                    EMP Tracker
+                </h1>
+
+                <p class="brand-subtitle">
+                    Employee Productivity &amp; Quality Management System
+                </p>
+
+                <p class="brand-description">
+                    Monitor employee productivity, production,
+                    quality and performance through one centralized
+                    dashboard.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             RIGHT SIDE
+        ========================== -->
+
+        <div class="login-right">
+
+            <div class="login-header">
+
+                <div class="header-icon">
+
+                    <svg viewBox="0 0 40 40">
+                        <path d="M7 31V20"></path>
+                        <path d="M7 31H34"></path>
+                        <path d="M10 26L17 19L22 23L32 12"></path>
+                        <path d="M27 12H32V17"></path>
+                    </svg>
+
+                </div>
+
+                <h1>
+                    Welcome Back
+                </h1>
+
+                <p>
+                    Login to access your dashboard
+                </p>
+
+            </div>
+
+
+            <!-- FLASH MESSAGE -->
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+
+                {% if messages %}
+
+                    {% for category, message in messages %}
+
+                        <div class="flash-message">
+                            ⚠ {{ message }}
+                        </div>
+
+                    {% endfor %}
+
+                {% endif %}
+
+            {% endwith %}
+
+
+            <!-- LOGIN AS -->
+
+            <div class="login-as-title">
+                Login As
+            </div>
+
+            <div class="role-options">
+
+                <!-- EMPLOYEE -->
+
+                <div class="role-option">
+
+                    <input
+                        type="radio"
+                        id="employee"
+                        name="role"
+                        value="employee"
+                        form="loginForm"
+                        checked
+                    >
+
+                    <label
+                        for="employee"
+                        class="role-label"
+                    >
+
+                        <span class="role-icon">
+
+                            <svg viewBox="0 0 30 30">
+                                <circle
+                                    cx="15"
+                                    cy="9"
+                                    r="4">
+                                </circle>
+
+                                <path
+                                    d="M7 25C7 19.5 10.5 16.5 15 16.5C19.5 16.5 23 19.5 23 25">
+                                </path>
+                            </svg>
+
+                        </span>
+
+                        <span class="role-name">
+                            Employee
+                        </span>
+
+                    </label>
+
+                </div>
+
+
+                <!-- ADMIN / HR -->
+
+                <div class="role-option">
+
+                    <input
+                        type="radio"
+                        id="admin"
+                        name="role"
+                        value="admin"
+                        form="loginForm"
+                    >
+
+                    <label
+                        for="admin"
+                        class="role-label"
+                    >
+
+                        <span class="role-icon">
+
+                            <svg viewBox="0 0 30 30">
+                                <circle
+                                    cx="12"
+                                    cy="9"
+                                    r="4">
+                                </circle>
+
+                                <path
+                                    d="M4 25C4 19.5 7 16.5 12 16.5">
+                                </path>
+
+                                <path
+                                    d="M20 15L23 16.5L26 15V21C26 24 23 26 23 26C23 26 20 24 20 21Z">
+                                </path>
+                            </svg>
+
+                        </span>
+
+                        <span class="role-name">
+                            Admin / HR
+                        </span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <!-- LOGIN FORM -->
+
+            <form
+                method="POST"
+                action="{{ url_for('login') }}"
+                class="login-form"
+                id="loginForm"
+            >
+
+                <div class="form-group">
+
+                    <label
+                        for="username"
+                        id="usernameLabel"
+                    >
+                        Employee ID
+                    </label>
+
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="Enter your Employee ID"
+                        autocomplete="username"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="login-button"
+                >
+                    Sign In
+                </button>
+
+            </form>
+
+
+            <div class="login-info">
+                Secure access to your employee productivity dashboard
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    const employeeOption =
+        document.getElementById("employee");
+
+    const adminOption =
+        document.getElementById("admin");
+
+    const usernameLabel =
+        document.getElementById("usernameLabel");
+
+    const usernameInput =
+        document.getElementById("username");
+
+
+    function updateLoginForm() {
+
+        if (adminOption.checked) {
+
+            usernameLabel.textContent = "Username";
+
+            usernameInput.placeholder =
+                "Enter your username";
+
+        } else {
+
+            usernameLabel.textContent = "Employee ID";
+
+            usernameInput.placeholder =
+                "Enter your Employee ID";
+
+        }
+
+    }
+
+
+    employeeOption.addEventListener(
+        "change",
+        updateLoginForm
+    );
+
+    adminOption.addEventListener(
+        "change",
+        updateLoginForm
+    );
+
+
+    updateLoginForm();
+
+</script>
+
+</body>
+</html>
